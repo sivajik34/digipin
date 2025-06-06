@@ -1,10 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Depends
 from fastapi.middleware.cors import CORSMiddleware
 from backend.digipin_service import router as digipin_router
-from database import database, engine, metadata
+from backend.database import  metadata
 from fastapi_users import FastAPIUsers
-from auth import fastapi_users, auth_backend, current_active_user
-from models import User
+from fastapi_users.router import get_register_router
+from backend.user_manager import get_user_manager
+from backend.auth import fastapi_users, auth_backend, current_active_user
+from backend.models import User
+from backend.schemas import UserRead, UserCreate
+from uuid import UUID
+
+fastapi_users = FastAPIUsers[User, UUID](
+    get_user_manager,
+    [auth_backend],
+)
 
 app = FastAPI()
 
@@ -17,23 +26,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create tables if not exists (simple example, use Alembic for production)
-metadata.create_all(bind=engine)
 
-@app.on_event("startup")
-async def on_startup():
-    await database.connect()
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    await database.disconnect()
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
 )
 
 app.include_router(
-    fastapi_users.get_register_router(), prefix="/auth", tags=["auth"]
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"],
 )
 
 app.include_router(digipin_router)

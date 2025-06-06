@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
-from user import get_user_db
-from models import User
+from backend.user_manager import get_user_db
+from backend.models import User
 from fastapi import Depends
 
 load_dotenv()

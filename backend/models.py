@@ -1,9 +1,10 @@
-from fastapi_users.db import SQLAlchemyBaseUserTable
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import Boolean, Column, String
-from database import metadata
+from backend.database import Base
+from uuid import UUID
 
-class User(SQLAlchemyBaseUserTable, metadata):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
-    # additional fields if needed, e.g.
-    # full_name = Column(String, nullable=True)
+    # Optional additional fields
+    full_name = Column(String, nullable=True)
 
