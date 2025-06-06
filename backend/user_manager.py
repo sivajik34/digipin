@@ -1,14 +1,14 @@
 # backend/user_manager.py
-from fastapi_users import BaseUserManager
+from fastapi_users import BaseUserManager,UUIDIDMixin
 from fastapi_users.db import SQLAlchemyUserDatabase
 from backend.models import User
-from backend.database import async_session_maker,get_async_session
+from backend.database import get_async_session
 from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 SECRET = "SUPERSECRETSECRET"  # Replace with a secure secret!
 
-class UserManager(BaseUserManager[User, UUID]):
+class UserManager(UUIDIDMixin,BaseUserManager[User, UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 

@@ -22,4 +22,10 @@ export const loginUser = (email, password) =>
 
 export const getCurrentUser = () => API.get("/users/me");
 
+export const registerUser = (email, password) =>
+  API.post("/auth/register", {
+    email,
+    password,
+  });
+
 

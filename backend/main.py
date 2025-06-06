@@ -7,7 +7,7 @@ from fastapi_users.router import get_register_router
 from backend.user_manager import get_user_manager
 from backend.auth import fastapi_users, auth_backend, current_active_user
 from backend.models import User
-from backend.schemas import UserRead, UserCreate
+from backend.schemas import UserRead, UserCreate, UserUpdate
 from uuid import UUID
 
 fastapi_users = FastAPIUsers[User, UUID](
@@ -36,6 +36,12 @@ app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/auth",
     tags=["auth"],
+)
+
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
 )
 
 app.include_router(digipin_router)
