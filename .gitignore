@@ -6,6 +6,7 @@
 backend/__pycache__/
 backend/**/*.pyc
 backend/venv/
+backend/digipin/
 backend/.env
 backend/.mypy_cache/
 backend/.pytest_cache/
