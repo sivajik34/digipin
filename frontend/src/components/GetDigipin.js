@@ -1,31 +1,43 @@
-import React, { useState } from 'react';
-import { fetchDigipin } from '../services/api';
+// src/components/GetDigipin.js
+import React, { useState } from "react";
+import { fetchDigipin } from "../services/api";
 
-function GetDigipin() {
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
-  const [digipin, setDigipin] = useState('');
+const GetDigipin = ({ isLoggedIn }) => {
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [result, setResult] = useState(null);
 
-  const handleFetch = async () => {
-    try {
-      const res = await fetchDigipin(lat, lng);
-      setDigipin(res.data?.digipin || 'Not found');
-    } catch (error) {
-      console.error(error);
-      setDigipin('Error fetching DIGIPIN');
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetchDigipin(lat, lng);
+    setResult(res.data);
+  };
+
+  const handleSave = async () => {
+    // later call save API
+    alert("Saving DIGIPIN is only a demo now.");
   };
 
   return (
     <div>
-      <input placeholder="Latitude" value={lat} onChange={(e) => setLat(e.target.value)} />
-      <input placeholder="Longitude" value={lng} onChange={(e) => setLng(e.target.value)} />
-      <button onClick={handleFetch}>Get DIGIPIN using Lat and Long</button>
-      <p>Your DIGIPIN: {digipin}</p>
+      <form onSubmit={handleSubmit}>
+        <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" />
+        <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" />
+        <button type="submit">Get DIGIPIN</button>
+      </form>
+
+      {result && (
+        <div>
+          <p><strong>DIGIPIN:</strong> {result.digipin}</p>
+
+          {isLoggedIn && (
+            <button onClick={handleSave}>Save to My Account</button>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default GetDigipin;
-
 
