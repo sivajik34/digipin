@@ -20,7 +20,7 @@ function GetDigipin() {
     <div>
       <input placeholder="Latitude" value={lat} onChange={(e) => setLat(e.target.value)} />
       <input placeholder="Longitude" value={lng} onChange={(e) => setLng(e.target.value)} />
-      <button onClick={handleFetch}>Get DIGIPIN</button>
+      <button onClick={handleFetch}>Get DIGIPIN using Lat and Long</button>
       <p>Your DIGIPIN: {digipin}</p>
     </div>
   );
