@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from digipin_service import router as digipin_router
+from backend.digipin_service import router as digipin_router
 
 app = FastAPI()
 
