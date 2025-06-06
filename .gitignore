@@ -1,0 +1,31 @@
+# =============================
+# Root-level .gitignore
+# =============================
+
+# Ignore Python/Backend files
+backend/__pycache__/
+backend/**/*.pyc
+backend/venv/
+backend/.env
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.DS_Store
+backend/.idea/
+
+# Ignore React/Frontend files
+frontend/node_modules/
+frontend/.DS_Store
+frontend/.env
+frontend/.eslintcache
+frontend/build/
+frontend/dist/
+
+# Ignore OS files
+*.log
+*.swp
+Thumbs.db
+.DS_Store
+
+# Ignore VS Code settings
+.vscode/
+
