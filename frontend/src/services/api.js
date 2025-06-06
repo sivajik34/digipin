@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8000", // your FastAPI backend
+  baseURL: process.env.REACT_APP_API_URL, // your FastAPI backend
 });
 
 export const fetchDigipin = (lat, lng) =>
