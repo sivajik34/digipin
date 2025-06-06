@@ -7,7 +7,7 @@ app = FastAPI()
 # Allow React frontend to call API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","http://localhost:3000","https://www.digipincode.com"],  # Vite default port
+    allow_origins=["http://localhost:5173","http://localhost:3000","https://courageous-paletas-7e8641.netlify.app","https://www.digipincode.com","https://api.digipincode.com"],  # Vite default port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
