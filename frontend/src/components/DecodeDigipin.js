@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import { decodeDigipin } from "../services/api";
+import { decodeDigipin,fetchDigipin } from "../services/api";
+import LocationMap from "./LocationMap";
 
 const DecodeDigipin = () => {
   const [digipin, setDigipin] = useState("");
   const [latlng, setLatlng] = useState(null);
   const [error, setError] = useState("");
 
-  // Allowed characters for digipin (excluding dash here since we add it automatically)
   const ALLOWED_CHARS_REGEX = /^[FCJKLMPT2-9]*$/i;
 
-  // Function to add dashes automatically in format 3-3-4
   const formatDigipin = (value) => {
-    // Remove all non-allowed chars including dashes first
     const cleaned = value.replace(/[^FCJKLMPT2-9]/gi, "").toUpperCase();
-
-    // Split cleaned string into parts of 3,3,4
     const part1 = cleaned.substring(0, 3);
     const part2 = cleaned.substring(3, 6);
     const part3 = cleaned.substring(6, 10);
@@ -29,8 +25,6 @@ const DecodeDigipin = () => {
   const handleChange = (e) => {
     const rawInput = e.target.value;
     const formattedInput = formatDigipin(rawInput);
-
-    // Validate only allowed chars (excluding dashes because formatting handles that)
     const cleanedInput = formattedInput.replace(/-/g, "");
     if (ALLOWED_CHARS_REGEX.test(cleanedInput)) {
       setDigipin(formattedInput);
@@ -50,7 +44,6 @@ const DecodeDigipin = () => {
       return;
     }
 
-    // Remove dashes before sending
     const formatted = digipin.replace(/-/g, "");
     if (formatted.length !== 10) {
       setError("DIGIPIN must be exactly 10 characters (excluding dashes)");
@@ -63,11 +56,28 @@ const DecodeDigipin = () => {
 
     try {
       const res = await decodeDigipin(formatted);
-      setLatlng(res.data);
+      setLatlng({
+        lat: parseFloat(res.data.latitude),
+        lng: parseFloat(res.data.longitude),
+      });
     } catch {
       setError("Failed to decode DIGIPIN");
     }
   };
+
+  const handleMapClick = async (lat, lng) => {
+  try {
+    const res = await fetchDigipin(lat, lng);
+    const digipinFromCoords = res.data.digipin;
+    const formatted = formatDigipin(digipinFromCoords);
+    setDigipin(formatted);
+    setLatlng({ lat: lat, lng: lng });
+    setError("");
+  } catch (err) {
+    setError("Failed to fetch DIGIPIN for selected location");
+  }
+};
+
 
   return (
     <div>
@@ -77,7 +87,7 @@ const DecodeDigipin = () => {
           value={digipin}
           onChange={handleChange}
           placeholder="Enter DIGIPIN (e.g. CCC-L94-44LC)"
-          maxLength={13} // 10 chars + 2 dashes + 1 extra space buffer
+          maxLength={13}
           required
         />
         <button type="submit">Get Coordinates</button>
@@ -85,10 +95,17 @@ const DecodeDigipin = () => {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {latlng && (
+      {latlng &&  (
         <div>
-          <p><strong>Latitude:</strong> {latlng.latitude}</p>
-          <p><strong>Longitude:</strong> {latlng.longitude}</p>
+          <p><strong>Latitude:</strong> {latlng.lat}</p>
+          <p><strong>Longitude:</strong> {latlng.lng}</p>
+          <LocationMap marker={
+    latlng &&
+    !isNaN(latlng.lat) &&
+    !isNaN(latlng.lng)
+      ? { lat: parseFloat(latlng.lat), lng: parseFloat(latlng.lng) }
+      : null
+  } onLocationSelect={handleMapClick} />
         </div>
       )}
     </div>

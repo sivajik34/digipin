@@ -3,7 +3,7 @@ import { fetchDigipin, saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
 import ShareDigipin from "./ShareDigipin";
 import LocationMap from "./LocationMap";
-
+import { toast } from "react-toastify";
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -13,11 +13,8 @@ const GetDigipin = ({ isLoggedIn }) => {
   const [locationError, setLocationError] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
-  
-  
 
   useEffect(() => {
-    // Try to load from sessionStorage first
     const storedLat = sessionStorage.getItem("digipin_lat");
     const storedLng = sessionStorage.getItem("digipin_lng");
     const storedDigipin = sessionStorage.getItem("digipin_result");
@@ -28,127 +25,109 @@ const GetDigipin = ({ isLoggedIn }) => {
       setLng(storedLng);
       setResult(JSON.parse(storedDigipin));
       setFormattedDigipin(storedFormatted);
-      setLocationError(null);
-      return; // skip geolocation fetch
+      return;
     }
+
     if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser.");
+      setLocationError("Geolocation not supported.");
       return;
     }
 
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const latitude = position.coords.latitude.toFixed(6);
-        const longitude = position.coords.longitude.toFixed(6);
-
+      async (pos) => {
+        const latitude = pos.coords.latitude.toFixed(6);
+        const longitude = pos.coords.longitude.toFixed(6);
         setLat(latitude);
         setLng(longitude);
-
-        setGeoLoading(false);
-        setApiLoading(true);
         try {
+          setApiLoading(true);
           const res = await fetchDigipin(latitude, longitude);
           setResult(res.data);
-          setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
-          setLocationError(null);
-          // Save to sessionStorage
+          const clean = res.data.digipin.replace(/-/g, "");
+          setFormattedDigipin(clean);
+
+          // Store only auto-fetch to sessionStorage
           sessionStorage.setItem("digipin_lat", latitude);
           sessionStorage.setItem("digipin_lng", longitude);
           sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
-          sessionStorage.setItem("digipin_formatted", res.data.digipin.replace(/-/g, ""));
-        } catch {
-          setLocationError("Failed to fetch DIGIPIN for your location.");
+          sessionStorage.setItem("digipin_formatted", clean);
+        } catch (err) {
+          setLocationError("DIGIPIN fetch failed.");
+        } finally {
+          setApiLoading(false);
+          setGeoLoading(false);
         }
-        setApiLoading(false);
       },
-      (error) => {
+      (err) => {
         setGeoLoading(false);
-        setLocationError("Unable to retrieve your location or permission denied.");
+        setLocationError("Location permission denied or failed.");
       }
     );
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const latVal = parseFloat(lat);
-    const lngVal = parseFloat(lng);
-
-    if (isNaN(latVal) || isNaN(lngVal)) {
-      alert("Please enter valid numbers for latitude and longitude.");
-      return;
-    }
-
-    if (latVal < 8 || latVal > 37) {
-      alert("Latitude must be between 8 and 37.");
-      return;
-    }
-
-    if (lngVal < 68 || lngVal > 98) {
-      alert("Longitude must be between 68 and 98.");
-      return;
-    }
-
-    setApiLoading(true);
+  const fetchAndSetDigipin = async (latVal, lngVal) => {
     try {
+      setApiLoading(true);
       const res = await fetchDigipin(latVal, lngVal);
       setResult(res.data);
       setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
-      setLocationError(null);
-    } catch {
-      alert("Failed to fetch DIGIPIN.");
+      return true;
+    } catch (err) {
+      toast.error("Failed to fetch DIGIPIN.");
+      return false;
+    } finally {
+      setApiLoading(false);
     }
-    setApiLoading(false);
   };
 
-  const handleSubmitFromMap = async (lat, lng) => {
-  if (lat < 8 || lat > 37 || lng < 68 || lng > 98) {
-    alert("Selected location is outside India.");
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const latVal = parseFloat(lat);
+    const lngVal = parseFloat(lng);
 
-  try {
-    const res = await fetchDigipin(lat, lng);
-    setResult(res.data);
-    const clean = res.data.digipin.replace(/-/g, "");
-    setFormattedDigipin(clean);
-  } catch (err) {
-    alert("Failed to fetch DIGIPIN.");
-  }
-};
+    if (isNaN(latVal) || isNaN(lngVal)) return toast.warn("Invalid coordinates.");
+    if (latVal < 8 || latVal > 37 || lngVal < 68 || lngVal > 98)
+      return toast.warn("Coordinates out of India boundary.");
 
+    await fetchAndSetDigipin(latVal, lngVal);
+  };
+
+  const handleSubmitFromMap = async (latVal, lngVal) => {
+    setLat(latVal.toFixed(6));
+    setLng(lngVal.toFixed(6));
+
+    if (latVal < 8 || latVal > 37 || lngVal < 68 || lngVal > 98)
+      return toast.warn("Selected location is outside India.");
+
+    await fetchAndSetDigipin(latVal, lngVal);
+  };
 
   const handleSave = async () => {
     try {
       const digipin = result.digipin.replace(/-/g, "");
       await saveUserDigipin(digipin);
-      alert("DIGIPIN saved to your account.");
+      toast.success("DIGIPIN saved successfully.");
     } catch {
-      alert("Failed to save DIGIPIN.");
+      toast.error("Failed to save DIGIPIN.");
     }
   };
 
   return (
     <div>
       <LocationMap
-  onLocationSelect={(lat, lng) => {
-    setLat(lat.toFixed(6));
-    setLng(lng.toFixed(6));
-    handleSubmitFromMap(lat, lng);
-  }}
-  marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
-/>
-      <form onSubmit={handleSubmit} aria-label="Manual latitude and longitude input">
+        onLocationSelect={handleSubmitFromMap}
+        marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
+      />
+
+      <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
         <input
           type="number"
           step="0.000001"
           value={lat}
           onChange={(e) => setLat(e.target.value)}
           placeholder="Latitude"
-          aria-label="Latitude"
           disabled={geoLoading || apiLoading}
-          required
         />
         <input
           type="number"
@@ -156,20 +135,18 @@ const GetDigipin = ({ isLoggedIn }) => {
           value={lng}
           onChange={(e) => setLng(e.target.value)}
           placeholder="Longitude"
-          aria-label="Longitude"
           disabled={geoLoading || apiLoading}
-          required
         />
         <button type="submit" disabled={geoLoading || apiLoading}>
           {apiLoading ? "Fetching..." : "Get DIGIPIN"}
         </button>
       </form>
 
-      {geoLoading && <p>Detecting your location… Please allow location access.</p>}
+      {geoLoading && <p>Detecting your location…</p>}
       {locationError && <p style={{ color: "red" }}>{locationError}</p>}
 
       {result && (
-        <div>
+        <div style={{ marginTop: "1rem" }}>
           <p>
             <strong>DIGIPIN:</strong> {result.digipin}
           </p>
@@ -179,7 +156,6 @@ const GetDigipin = ({ isLoggedIn }) => {
               Save to My Account
             </button>
           )}
-
           <QrCodeViewer digipin={formattedDigipin} />
         </div>
       )}
