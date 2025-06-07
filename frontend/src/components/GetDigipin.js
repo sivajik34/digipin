@@ -122,16 +122,14 @@ const GetDigipin = ({ isLoggedIn }) => {
 
       <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
         <input
-          type="number"
-          step="0.000001"
+          type="text"          
           value={lat}
           onChange={(e) => setLat(e.target.value)}
           placeholder="Latitude"
           disabled={geoLoading || apiLoading}
         />
         <input
-          type="number"
-          step="0.000001"
+          type="text"          
           value={lng}
           onChange={(e) => setLng(e.target.value)}
           placeholder="Longitude"
