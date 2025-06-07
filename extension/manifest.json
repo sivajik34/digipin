@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "DIGIPIN Autofill",
+  "version": "1.1",
+  "description": "Fill e-commerce address forms using DIGIPIN with preview",
+  "permissions": ["scripting", "tabs", "activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DIGIPIN Autofill"
+  },
+  "host_permissions": ["http://localhost:8000/*"]
+}

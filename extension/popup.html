@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DIGIPIN Autofill</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; width: 280px; }
+    input { width: 100%; margin-bottom: 10px; }
+    button { width: 100%; margin-top: 5px; }
+    .preview { font-size: 12px; background: #f2f2f2; padding: 5px; border-radius: 5px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h3>Enter DIGIPIN</h3>
+  <input type="text" id="digipin" placeholder="Enter DIGIPIN" />
+  <button id="fetch">Preview Address</button>
+  <div class="preview" id="preview" style="display:none;"></div>
+  <button id="fill">Fill Address</button>
+  <script src="popup.js"></script>
+</body>
+</html>

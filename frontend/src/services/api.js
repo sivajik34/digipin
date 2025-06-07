@@ -45,3 +45,7 @@ export const listUserDigipins = () =>
 
 export const deleteUserDigipin = (id) =>
   API.delete(`/api/digipin/user/delete/${id}`);
+
+export const fetchAddressFromDigipin = (digipin) =>
+  API.get("/api/address", { params: { digipin } });
+
