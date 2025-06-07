@@ -27,5 +27,8 @@ export const registerUser = (email, password) =>
     email,
     password,
   });
+  
+export const decodeDigipin = (digipin) =>
+  API.get("/api/latlng", { params: { digipin } });  
 
 

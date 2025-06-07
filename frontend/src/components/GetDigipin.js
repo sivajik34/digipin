@@ -9,9 +9,26 @@ const GetDigipin = ({ isLoggedIn }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetchDigipin(lat, lng);
-    setResult(res.data);
-  };
+    const latVal = parseFloat(lat);
+    const lngVal = parseFloat(lng);
+
+    if (isNaN(latVal) || isNaN(lngVal)) {
+      alert("Please enter valid numbers for latitude and longitude.");
+      return;
+    }
+
+    if (latVal < 8 || latVal > 37) {
+      alert("Latitude must be between 8 and 37.");
+      return;
+    }
+
+    if (lngVal < 68 || lngVal > 98) {
+      alert("Longitude must be between 68 and 98.");
+      return;
+    }
+      const res = await fetchDigipin(lat, lng);
+      setResult(res.data);
+    };
 
   const handleSave = async () => {
     // later call save API

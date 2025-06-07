@@ -3,6 +3,7 @@ import './App.css';
 import GetDigipin from './components/GetDigipin';
 import LoginForm from './components/LoginForm';
 import RegisterForm from "./components/RegisterForm";
+import DecodeDigipin from "./components/DecodeDigipin";
 import { getCurrentUser } from "./services/api";
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
       )}
 
       <GetDigipin isLoggedIn={isLoggedIn} />
+      <DecodeDigipin />
     </div>
   );
 }
