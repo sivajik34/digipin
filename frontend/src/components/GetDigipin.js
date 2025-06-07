@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { fetchDigipin, saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
 import ShareDigipin from "./ShareDigipin";
+import LocationMap from "./LocationMap";
+
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -100,6 +102,23 @@ const GetDigipin = ({ isLoggedIn }) => {
     setApiLoading(false);
   };
 
+  const handleSubmitFromMap = async (lat, lng) => {
+  if (lat < 8 || lat > 37 || lng < 68 || lng > 98) {
+    alert("Selected location is outside India.");
+    return;
+  }
+
+  try {
+    const res = await fetchDigipin(lat, lng);
+    setResult(res.data);
+    const clean = res.data.digipin.replace(/-/g, "");
+    setFormattedDigipin(clean);
+  } catch (err) {
+    alert("Failed to fetch DIGIPIN.");
+  }
+};
+
+
   const handleSave = async () => {
     try {
       const digipin = result.digipin.replace(/-/g, "");
@@ -112,6 +131,14 @@ const GetDigipin = ({ isLoggedIn }) => {
 
   return (
     <div>
+      <LocationMap
+  onLocationSelect={(lat, lng) => {
+    setLat(lat.toFixed(6));
+    setLng(lng.toFixed(6));
+    handleSubmitFromMap(lat, lng);
+  }}
+  marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
+/>
       <form onSubmit={handleSubmit} aria-label="Manual latitude and longitude input">
         <input
           type="number"
