@@ -39,5 +39,9 @@ def downgrade() -> None:
     sa.Column('is_verified', sa.BOOLEAN(), autoincrement=False, nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('users_pkey'))
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    conn = op.get_bind()
+    inspector = inspect(conn)
+    indexes = [index['name'] for index in inspector.get_indexes('users')]
+    if 'ix_users_email' in indexes:
+        op.drop_index('ix_users_email', table_name='users')
     # ### end Alembic commands ###
