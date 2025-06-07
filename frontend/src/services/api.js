@@ -27,8 +27,14 @@ export const registerUser = (email, password) =>
     email,
     password,
   });
-  
+
 export const decodeDigipin = (digipin) =>
-  API.get("/api/latlng", { params: { digipin } });  
+  API.get("/api/latlng", { params: { digipin } });
+
+export const getQrCodeUrl = (digipin) =>
+  `${process.env.REACT_APP_API_URL}/api/qr?digipin=${digipin}`;
+
+export const getQrDownloadUrl = (digipin) =>
+  `${process.env.REACT_APP_API_URL}/api/qr/download?digipin=${digipin}`;
 
 

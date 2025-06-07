@@ -1,11 +1,13 @@
 // src/components/GetDigipin.js
 import React, { useState } from "react";
 import { fetchDigipin } from "../services/api";
+import QrCodeViewer from "./QrCodeViewer";
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [result, setResult] = useState(null);
+  const [formattedDigipin, setFormattedDigipin] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +30,9 @@ const GetDigipin = ({ isLoggedIn }) => {
     }
       const res = await fetchDigipin(lat, lng);
       setResult(res.data);
+
+      const clean = res.data.digipin.replace(/-/g, "");
+      setFormattedDigipin(clean);
     };
 
   const handleSave = async () => {
@@ -50,6 +55,7 @@ const GetDigipin = ({ isLoggedIn }) => {
           {isLoggedIn && (
             <button onClick={handleSave}>Save to My Account</button>
           )}
+          <QrCodeViewer digipin={formattedDigipin} />
         </div>
       )}
     </div>
