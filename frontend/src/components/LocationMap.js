@@ -1,9 +1,9 @@
 // src/components/LocationMap.js
-import React from "react";
+import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-
+import { useMap } from "react-leaflet";
 // Fix missing marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -23,6 +23,16 @@ const ClickHandler = ({ onClick }) => {
   return null;
 };
 
+const RecenterMap = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.setView([lat, lng], 15); // zoom to 15
+    }
+  }, [lat, lng, map]);
+  return null;
+};
+
 const LocationMap = ({ onLocationSelect, marker }) => {
   return (
     <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
@@ -31,7 +41,12 @@ const LocationMap = ({ onLocationSelect, marker }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <ClickHandler onClick={onLocationSelect} />
-      {marker && <Marker position={[marker.lat, marker.lng]} />}
+      {marker && (
+  <>
+    <Marker position={[marker.lat, marker.lng]} />
+    <RecenterMap lat={marker.lat} lng={marker.lng} />
+  </>
+)}
     </MapContainer>
   );
 };

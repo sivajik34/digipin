@@ -94,18 +94,18 @@ const DecodeDigipin = () => {
       </form>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {latlng &&  (
-        <div>
-          <p><strong>Latitude:</strong> {latlng.lat}</p>
-          <p><strong>Longitude:</strong> {latlng.lng}</p>
-          <LocationMap marker={
+      <LocationMap marker={
     latlng &&
     !isNaN(latlng.lat) &&
     !isNaN(latlng.lng)
       ? { lat: parseFloat(latlng.lat), lng: parseFloat(latlng.lng) }
       : null
   } onLocationSelect={handleMapClick} />
+      {latlng &&  (
+        <div>
+          <p><strong>Latitude:</strong> {latlng.lat}</p>
+          <p><strong>Longitude:</strong> {latlng.lng}</p>
+          
         </div>
       )}
     </div>
