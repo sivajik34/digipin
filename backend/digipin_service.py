@@ -1,14 +1,12 @@
 # digipin_service.py
-import os
-from dotenv import load_dotenv
 import httpx
 from fastapi import APIRouter, Query,  HTTPException
 import re
+from backend.config import DIGIPIN_API_BASE
 
-load_dotenv()
 router = APIRouter()
 
-DIGIPIN_API_BASE = os.getenv("DIGIPIN_API_BASE", "http://localhost:5000")
+
 ALLOWED_PATTERN = re.compile(r"^[FCJKLMPT2-9]+$", re.IGNORECASE)
 
 @router.get("/api/digipin")

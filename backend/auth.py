@@ -1,19 +1,14 @@
-import os
-from dotenv import load_dotenv
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy
 from backend.user_manager import get_user_db
 from backend.models import User
 from fastapi import Depends
-
-load_dotenv()
-SECRET = os.getenv("SECRET")
-
+from backend.config import SECRET,JWT_LIFETIME_SECONDS
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=JWT_LIFETIME_SECONDS)
 
 auth_backend = AuthenticationBackend(
     name="jwt",

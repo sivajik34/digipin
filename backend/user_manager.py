@@ -3,11 +3,10 @@ from fastapi_users import BaseUserManager,UUIDIDMixin
 from fastapi_users.db import SQLAlchemyUserDatabase
 from backend.models import User
 from backend.database import get_async_session
-#from uuid import UUID
 from sqlalchemy.dialects.postgresql import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-SECRET = "SUPERSECRETSECRET"  # Replace with a secure secret!
+from backend.config import SECRET
 
 class CustomUserDatabase(SQLAlchemyUserDatabase[User, UUID]):
     def __init__(self, session, model):

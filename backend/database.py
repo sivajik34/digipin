@@ -1,15 +1,8 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy import  MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Read the DATABASE_URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL")
+from backend.config import DATABASE_URL
 
 # Raise an error if it's not set
 if not DATABASE_URL:
