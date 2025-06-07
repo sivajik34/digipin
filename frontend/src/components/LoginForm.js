@@ -1,7 +1,7 @@
 // src/components/LoginForm.js
 import React, { useState } from "react";
 import { loginUser } from "../services/api";
-
+import GoogleLoginButton from "./GoogleLoginButton";
 const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +19,7 @@ const LoginForm = ({ onLogin }) => {
   };
 
   return (
+    <div>
     <form onSubmit={handleLogin}>
       <input
         type="email"
@@ -35,7 +36,8 @@ const LoginForm = ({ onLogin }) => {
         required
       />
       <button type="submit">Login</button>
-    </form>
+    </form><div style={{ margin: "20px 0", textAlign: "center" }}>OR</div><GoogleLoginButton onLogin={onLogin} /></div>
+    
   );
 };
 

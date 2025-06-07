@@ -49,3 +49,5 @@ export const deleteUserDigipin = (id) =>
 export const fetchAddressFromDigipin = (digipin) =>
   API.get("/api/address", { params: { digipin } });
 
+export const googleLogin = (token) =>
+  API.post("/auth/google", { token });

@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy.ext.asyncio import AsyncEngine
 from alembic import context
 import os
-from backend.config import DATABASE_URL
+
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
+from backend.config import DATABASE_URL
 
 # Alembic Config object
 config = context.config

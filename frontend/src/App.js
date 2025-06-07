@@ -7,6 +7,7 @@ import DecodeDigipin from "./components/DecodeDigipin";
 import MyDigipins from "./components/MyDigipins";
 import { getCurrentUser } from "./services/api";
 import Modal from "react-modal";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import {
   BrowserRouter as Router,
@@ -18,9 +19,20 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const GOOGLE_CLIENT_ID = "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
+function App() {
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AppContent />
+    </GoogleOAuthProvider>
+  );
+}
+
+export default App;
+
 Modal.setAppElement("#root");
 
-function App() {
+function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -122,4 +134,4 @@ function App() {
   );
 }
 
-export default App;
+

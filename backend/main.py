@@ -11,7 +11,7 @@ from backend.schemas.user_schemas import UserRead, UserCreate, UserUpdate
 from uuid import UUID
 from backend.qr_router import router as qr_router
 from backend.digipin_user_router import router as user_digipin_router
-
+from backend.google_router import router as google_router
 fastapi_users = FastAPIUsers[User, UUID](
     get_user_manager,
     [auth_backend],
@@ -49,6 +49,7 @@ app.include_router(
 app.include_router(digipin_router)
 app.include_router(qr_router)
 app.include_router(user_digipin_router)
+app.include_router(google_router)
 
 @app.get("/")
 async def root():
