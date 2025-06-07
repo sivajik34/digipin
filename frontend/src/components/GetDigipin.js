@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchDigipin, saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
+import ShareDigipin from "./ShareDigipin";
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -10,8 +11,24 @@ const GetDigipin = ({ isLoggedIn }) => {
   const [locationError, setLocationError] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
+  
+  
 
   useEffect(() => {
+    // Try to load from sessionStorage first
+    const storedLat = sessionStorage.getItem("digipin_lat");
+    const storedLng = sessionStorage.getItem("digipin_lng");
+    const storedDigipin = sessionStorage.getItem("digipin_result");
+    const storedFormatted = sessionStorage.getItem("digipin_formatted");
+
+    if (storedLat && storedLng && storedDigipin && storedFormatted) {
+      setLat(storedLat);
+      setLng(storedLng);
+      setResult(JSON.parse(storedDigipin));
+      setFormattedDigipin(storedFormatted);
+      setLocationError(null);
+      return; // skip geolocation fetch
+    }
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser.");
       return;
@@ -33,6 +50,11 @@ const GetDigipin = ({ isLoggedIn }) => {
           setResult(res.data);
           setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
           setLocationError(null);
+          // Save to sessionStorage
+          sessionStorage.setItem("digipin_lat", latitude);
+          sessionStorage.setItem("digipin_lng", longitude);
+          sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
+          sessionStorage.setItem("digipin_formatted", res.data.digipin.replace(/-/g, ""));
         } catch {
           setLocationError("Failed to fetch DIGIPIN for your location.");
         }
@@ -124,7 +146,7 @@ const GetDigipin = ({ isLoggedIn }) => {
           <p>
             <strong>DIGIPIN:</strong> {result.digipin}
           </p>
-
+          <ShareDigipin digipin={result.digipin} />
           {isLoggedIn && (
             <button onClick={handleSave} disabled={apiLoading}>
               Save to My Account

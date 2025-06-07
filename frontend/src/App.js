@@ -7,6 +7,9 @@ import DecodeDigipin from "./components/DecodeDigipin";
 import { getCurrentUser } from "./services/api";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 import MyDigipins from "./components/MyDigipins";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
@@ -65,6 +68,7 @@ function App() {
             }
           />
         </Routes>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   );
