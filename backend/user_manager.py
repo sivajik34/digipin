@@ -3,10 +3,19 @@ from fastapi_users import BaseUserManager,UUIDIDMixin
 from fastapi_users.db import SQLAlchemyUserDatabase
 from backend.models import User
 from backend.database import get_async_session
-from uuid import UUID
+#from uuid import UUID
+from sqlalchemy.dialects.postgresql import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 SECRET = "SUPERSECRETSECRET"  # Replace with a secure secret!
+
+class CustomUserDatabase(SQLAlchemyUserDatabase[User, UUID]):
+    def __init__(self, session, model):
+        super().__init__(session, model)
+
+    def parse_id(self, id: str) -> UUID:
+        print("parse_id received:", id)
+        return id
 
 class UserManager(UUIDIDMixin,BaseUserManager[User, UUID]):
     reset_password_token_secret = SECRET
@@ -19,9 +28,10 @@ class UserManager(UUIDIDMixin,BaseUserManager[User, UUID]):
         print(f"User {user.id} has forgot their password. Reset token: {token}")
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
-    yield SQLAlchemyUserDatabase(session, User)
+    yield CustomUserDatabase(session,User)
 
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
+    
 
 

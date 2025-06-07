@@ -35,19 +35,20 @@ async def get_latlng(
     digipin: str = Query(
         ...,
         min_length=1,
-        max_length=10,
+        max_length=14,
         description="DIGIPIN code with allowed chars F,C,J,K,L,M,P,T or digits 2-9",
     )
 ):
-    if not ALLOWED_PATTERN.fullmatch(digipin):
+    clean_digipin = digipin.replace("-", "").upper()
+    if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
         raise HTTPException(
             status_code=400,
-            detail="Invalid DIGIPIN: only characters F,C,J,K,L,M,P,T and digits 2-9 are allowed",
+            detail="Invalid DIGIPIN: must be exactly 10 characters using only F,C,J,K,L,M,P,T and digits 2-9",
         )
     
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"{DIGIPIN_API_BASE}/api/digipin/decode", params={"digipin": digipin}
+            f"{DIGIPIN_API_BASE}/api/digipin/decode", params={"digipin": clean_digipin}
         )
     return res.json()
 

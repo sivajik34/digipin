@@ -1,6 +1,6 @@
 // src/components/GetDigipin.js
 import React, { useState } from "react";
-import { fetchDigipin } from "../services/api";
+import { fetchDigipin,saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
 
 const GetDigipin = ({ isLoggedIn }) => {
@@ -36,10 +36,14 @@ const GetDigipin = ({ isLoggedIn }) => {
     };
 
   const handleSave = async () => {
-    // later call save API
-    alert("Saving DIGIPIN is only a demo now.");
-  };
-
+  try {
+    const digipin = result.digipin.replace(/-/g, "");
+    await saveUserDigipin(digipin);
+    alert("DIGIPIN saved to your account.");
+  } catch (err) {
+    alert("Failed to save DIGIPIN.");
+  }
+};
   return (
     <div>
       <form onSubmit={handleSubmit}>
