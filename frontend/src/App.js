@@ -63,7 +63,7 @@ function AppContent() {
     <Router>
       <div className="App">
         <header style={{ padding: "10px", backgroundColor: "#f2f2f2" }}>
-          <img src={digipincode} alt="DIGIPIN Logo" style={{ height: "80px", marginRight: "15px" }} />
+          <img src={digipincode} alt="DIGIPIN Logo" style={{ height: "120px", marginRight: "15px" }} />
           <nav style={{ marginBottom: "10px" }}>
             <Link to="/">Home</Link> |{" "}
             <Link to="/decode">Decode DIGIPIN</Link> |{" "}
@@ -95,7 +95,7 @@ function AppContent() {
         </main>
 
         <footer className="footer">
-          <p>&copy; 2025 DIGIPIN Finder | <a href="https://digipincode.com">digipincode.com</a></p>
+          <p>&copy; 2025 DIGIPIN | <a href="https://digipincode.com">digipincode.com</a></p>
         </footer>
 
         <ToastContainer position="top-right" autoClose={3000} />

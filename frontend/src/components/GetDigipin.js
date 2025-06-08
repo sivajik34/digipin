@@ -4,6 +4,8 @@ import QrCodeViewer from "./QrCodeViewer";
 import ShareDigipin from "./ShareDigipin";
 import LocationMap from "./LocationMap";
 import { toast } from "react-toastify";
+import OpenInGoogleMaps from "./OpenInGoogleMaps";
+
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -155,6 +157,7 @@ const GetDigipin = ({ isLoggedIn }) => {
             </button>
           )}
           <QrCodeViewer digipin={formattedDigipin} />
+          <OpenInGoogleMaps lat={lat} lng={lng} />
         </div>
       )}
     </div>

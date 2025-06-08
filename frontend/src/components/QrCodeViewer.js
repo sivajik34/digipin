@@ -1,5 +1,5 @@
 // src/components/QrCodeViewer.js
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Modal from "react-modal";
 import { getQrCodeUrl, getQrDownloadUrl } from "../services/api";
 import { QrCode } from "lucide-react";
@@ -23,6 +23,15 @@ const QrCodeViewer = ({ digipin }) => {
     setModalIsOpen(false);
     setShowQr(false); // prevent loading QR if modal not visible
   };
+
+  useEffect(() => {
+  if (modalIsOpen) {
+    const timer = setTimeout(() => {
+      setShowQr(true);
+    }, 100); // 100ms delay
+    return () => clearTimeout(timer);
+  }
+}, [modalIsOpen]);
 
   const qrUrl = getQrCodeUrl(digipin);
   const downloadUrl = getQrDownloadUrl(digipin);

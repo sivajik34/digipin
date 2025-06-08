@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { listUserDigipins, deleteUserDigipin } from "../services/api";
+import {
+  listUserDigipins,
+  deleteUserDigipin,
+  decodeDigipin,
+} from "../services/api";
 import { formatDigipin } from "../utils/format";
 import Button from "./ui/button";
-import QrCodeViewer from "./QrCodeViewer";  // import here
+import QrCodeViewer from "./QrCodeViewer";
 
 const MyDigipins = () => {
   const [digipins, setDigipins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [coordsMap, setCoordsMap] = useState({});
+  const [loadingCoords, setLoadingCoords] = useState({});
 
-  const fetchDigipins = async () => {
-    try {
-      const res = await listUserDigipins();
-      setDigipins(res.data);
-    } catch (err) {
-      console.error("Error fetching saved DIGIPINs", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchDigipins = async () => {
+      try {
+        const res = await listUserDigipins();
+        setDigipins(res.data);
+      } catch (err) {
+        console.error("Error fetching saved DIGIPINs", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDigipins();
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this DIGIPIN?")) return;
@@ -34,9 +44,33 @@ const MyDigipins = () => {
     alert("DIGIPIN copied to clipboard");
   };
 
-  useEffect(() => {
-    fetchDigipins();
-  }, []);
+  const handleOpenInMaps = async (dp) => {
+    if (coordsMap[dp.id]) {
+      const { lat, lng } = coordsMap[dp.id];
+      window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+      return;
+    }
+
+    setLoadingCoords((prev) => ({ ...prev, [dp.id]: true }));
+
+    try {
+      const res = await decodeDigipin(dp.digipin);
+      const { latitude, longitude } = res.data;
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        throw new Error("Invalid coordinates received.");
+      }
+      setCoordsMap((prev) => ({ ...prev, [dp.id]: { lat, lng } }));
+      window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+    } catch (err) {
+      alert("Failed to decode DIGIPIN");
+      console.error(err);
+    } finally {
+      setLoadingCoords((prev) => ({ ...prev, [dp.id]: false }));
+    }
+  };
 
   if (loading) return <p>Loading your DIGIPINs...</p>;
 
@@ -60,6 +94,13 @@ const MyDigipins = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <QrCodeViewer digipin={dp.digipin} />
+                <Button
+                  variant="default"
+                  onClick={() => handleOpenInMaps(dp)}
+                  disabled={loadingCoords[dp.id]}
+                >
+                  {loadingCoords[dp.id] ? "Loading…" : "Open in Maps"}
+                </Button>
                 <Button variant="outline" onClick={() => handleCopy(dp.digipin)}>
                   Copy
                 </Button>
