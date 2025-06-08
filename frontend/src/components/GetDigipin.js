@@ -115,11 +115,7 @@ const GetDigipin = ({ isLoggedIn }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <LocationMap
-        onLocationSelect={handleSubmitFromMap}
-        marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
-      />
+    <div className="max-w-4xl mx-auto p-4 space-y-6">     
 
       <form
         onSubmit={handleSubmit}
@@ -155,11 +151,12 @@ const GetDigipin = ({ isLoggedIn }) => {
 
       {result && (
         <div className="bg-gray-50 p-4 rounded shadow space-y-4">
+          <div className="flex flex-wrap gap-4 justify-center">
           <p className="text-lg font-semibold">
             DIGIPIN: <span className="text-blue-800">{result.digipin}</span>
           </p>
 
-          <ShareDigipin digipin={result.digipin} />
+          
 
           {isLoggedIn && (
             <SaveDigipinForm
@@ -172,6 +169,11 @@ const GetDigipin = ({ isLoggedIn }) => {
 
           <QrCodeViewer digipin={formattedDigipin} />
           <OpenInGoogleMaps lat={lat} lng={lng} />
+          </div>
+          <LocationMap
+        onLocationSelect={handleSubmitFromMap}
+        marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
+      />
         </div>
       )}
     </div>

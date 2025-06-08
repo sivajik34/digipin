@@ -1,6 +1,11 @@
 // src/components/OpenInGoogleMaps.js
 import React from "react";
-
+import {
+  Copy,
+  
+  MapPin
+  
+} from "lucide-react";
 const OpenInGoogleMaps = ({ lat, lng }) => {
   if (!lat || !lng) return null;
 
@@ -11,9 +16,10 @@ const OpenInGoogleMaps = ({ lat, lng }) => {
       href={googleMapsUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 transform"
+      className="hover:text-blue-600 transition"
+      title="Open in Google Maps"
     >
-      Open in Google Maps
+      <MapPin className="w-5 h-5" />
     </a>
   );
 };
