@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import OpenInGoogleMaps from "./OpenInGoogleMaps";
 import SaveDigipinForm from "./SaveDigipinForm";
 
-
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
@@ -50,7 +49,6 @@ const GetDigipin = ({ isLoggedIn }) => {
           const clean = res.data.digipin.replace(/-/g, "");
           setFormattedDigipin(clean);
 
-          // Store only auto-fetch to sessionStorage
           sessionStorage.setItem("digipin_lat", latitude);
           sessionStorage.setItem("digipin_lng", longitude);
           sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
@@ -62,7 +60,7 @@ const GetDigipin = ({ isLoggedIn }) => {
           setGeoLoading(false);
         }
       },
-      (err) => {
+      () => {
         setGeoLoading(false);
         setLocationError("Location permission denied or failed.");
       }
@@ -76,7 +74,7 @@ const GetDigipin = ({ isLoggedIn }) => {
       setResult(res.data);
       setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch DIGIPIN.");
       return false;
     } finally {
@@ -117,46 +115,61 @@ const GetDigipin = ({ isLoggedIn }) => {
   };
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
       <LocationMap
         onLocationSelect={handleSubmitFromMap}
         marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
       />
 
-      <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-wrap gap-4 items-center mt-6"
+      >
         <input
-          type="text"          
+          type="text"
           value={lat}
           onChange={(e) => setLat(e.target.value)}
           placeholder="Latitude"
           disabled={geoLoading || apiLoading}
+          className="border px-3 py-2 rounded w-full sm:w-auto"
         />
         <input
-          type="text"          
+          type="text"
           value={lng}
           onChange={(e) => setLng(e.target.value)}
           placeholder="Longitude"
           disabled={geoLoading || apiLoading}
+          className="border px-3 py-2 rounded w-full sm:w-auto"
         />
-        <button type="submit" disabled={geoLoading || apiLoading}>
+        <button
+          type="submit"
+          disabled={geoLoading || apiLoading}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
           {apiLoading ? "Fetching..." : "Get DIGIPIN"}
         </button>
       </form>
 
-      {geoLoading && <p>Detecting your location…</p>}
-      {locationError && <p style={{ color: "red" }}>{locationError}</p>}
+      {geoLoading && <p className="text-gray-600">Detecting your location…</p>}
+      {locationError && <p className="text-red-600">{locationError}</p>}
 
       {result && (
-        <div style={{ marginTop: "1rem" }}>
-          <p>
-            <strong>DIGIPIN:</strong> {result.digipin}
+        <div className="bg-gray-50 p-4 rounded shadow space-y-4">
+          <p className="text-lg font-semibold">
+            DIGIPIN: <span className="text-blue-800">{result.digipin}</span>
           </p>
+
           <ShareDigipin digipin={result.digipin} />
+
           {isLoggedIn && (
-             <SaveDigipinForm digipin={result.digipin} onSaved={() => {
-        // Optional: any action on successful save, e.g. refresh list
-      }} />
+            <SaveDigipinForm
+              digipin={result.digipin}
+              onSaved={() => {
+                // optional: refresh list
+              }}
+            />
           )}
+
           <QrCodeViewer digipin={formattedDigipin} />
           <OpenInGoogleMaps lat={lat} lng={lng} />
         </div>

@@ -1,24 +1,38 @@
-// src/components/SaveDigipinForm.js
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { saveUserDigipin } from "../services/api";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Validation schema
+const schema = yup.object().shape({
+  friendlyName: yup
+    .string()
+    .trim()
+    .required("Friendly name is required")
+    .max(50, "Name too long"),
+});
 
 const SaveDigipinForm = ({ digipin, onSaved }) => {
-  const [friendlyName, setFriendlyName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!friendlyName.trim()) {
-      return toast.warn("Please enter a friendly name.");
-    }
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
+  const onSubmit = async (data) => {
     try {
       setLoading(true);
       const cleanDigipin = digipin.replace(/-/g, "");
-      await saveUserDigipin(cleanDigipin, friendlyName.trim());
+      await saveUserDigipin(cleanDigipin, data.friendlyName.trim());
       toast.success("DIGIPIN saved successfully!");
-      setFriendlyName("");
+      reset();
       if (onSaved) onSaved();
     } catch (error) {
       toast.error("Failed to save DIGIPIN.");
@@ -28,18 +42,24 @@ const SaveDigipinForm = ({ digipin, onSaved }) => {
   };
 
   return (
-    <form onSubmit={handleSave} style={{ marginTop: "1rem" }}>
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex items-center gap-2 flex-wrap">
       <input
+        {...register("friendlyName")}
         type="text"
         placeholder="Friendly name (e.g. Home, Office)"
-        value={friendlyName}
-        onChange={(e) => setFriendlyName(e.target.value)}
+        className="px-3 py-2 border rounded-md w-64"
         disabled={loading}
-        style={{ marginRight: "0.5rem" }}
       />
-      <button type="submit" disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+      >
         {loading ? "Saving..." : "Save DIGIPIN"}
       </button>
+      {errors.friendlyName && (
+        <p className="text-red-600 text-sm mt-1">{errors.friendlyName.message}</p>
+      )}
     </form>
   );
 };
