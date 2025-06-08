@@ -32,8 +32,8 @@ const ShareDigipin = ({ digipin }) => {
   };
 
   return (
-    <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm text-center">
-      <h4 className="text-lg font-semibold mb-2">Share your DIGIPIN</h4>
+    <div className="">
+      
 
       {navigator.share ? (
         <button
@@ -41,7 +41,7 @@ const ShareDigipin = ({ digipin }) => {
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200"
         >
           <Share2 className="w-5 h-5" />
-          Share via Native Share
+          Share
         </button>
       ) : (
         <div className="flex justify-center gap-4 mt-3">

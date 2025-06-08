@@ -168,8 +168,7 @@ const GetDigipin = ({ isLoggedIn }) => {
           )}
 
           <QrCodeViewer digipin={formattedDigipin} />
-          <OpenInGoogleMaps lat={lat} lng={lng} />
-          </div>
+          <OpenInGoogleMaps lat={lat} lng={lng} /><ShareDigipin digipin={result.digipin} /></div>
           <LocationMap
         onLocationSelect={handleSubmitFromMap}
         marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
