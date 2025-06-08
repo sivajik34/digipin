@@ -119,7 +119,7 @@ const GetDigipin = ({ isLoggedIn }) => {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap gap-4 items-center mt-6"
+        className="flex flex-wrap gap-4 items-center mt-6 justify-center"
       >
         <input
           type="text"
