@@ -15,3 +15,19 @@ class DigipinRead(BaseModel):
 
     class Config:
         orm_mode = True
+        
+class EncodeDigipinResponse(BaseModel):
+    digipin: str
+
+class DecodeDigipinResponse(BaseModel):
+    latitude: float
+    longitude: float
+
+class AddressResponse(BaseModel):
+    latitude: float
+    longitude: float
+    full_address: str | None
+    pincode: str | None
+    city: str | None
+    state: str | None
+    country: str | None        
