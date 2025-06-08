@@ -20,7 +20,7 @@ async def save_digipin(
     if len(digipin_clean) != 10:
         raise HTTPException(status_code=400, detail="Invalid DIGIPIN format")
 
-    new_dp = SavedDigipin(id=uuid4(), digipin=digipin_clean, user_id=user.id)
+    new_dp = SavedDigipin(id=uuid4(), digipin=digipin_clean,user_friendly_name=data.user_friendly_name, user_id=user.id)
     session.add(new_dp)
     await session.commit()
     await session.refresh(new_dp)

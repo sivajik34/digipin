@@ -37,8 +37,8 @@ export const getQrCodeUrl = (digipin) =>
 export const getQrDownloadUrl = (digipin) =>
   `${process.env.REACT_APP_API_URL}/api/qr/download?digipin=${digipin}`;
 
-export const saveUserDigipin = (digipin) =>
-  API.post("/api/digipin/user/save", { digipin });
+export const saveUserDigipin = (digipin, user_friendly_name) =>
+  API.post("/api/digipin/user/save", { digipin, user_friendly_name });
 
 export const listUserDigipins = () =>
   API.get("/api/digipin/user/list");

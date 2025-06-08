@@ -5,6 +5,7 @@ import ShareDigipin from "./ShareDigipin";
 import LocationMap from "./LocationMap";
 import { toast } from "react-toastify";
 import OpenInGoogleMaps from "./OpenInGoogleMaps";
+import SaveDigipinForm from "./SaveDigipinForm";
 
 
 const GetDigipin = ({ isLoggedIn }) => {
@@ -152,9 +153,9 @@ const GetDigipin = ({ isLoggedIn }) => {
           </p>
           <ShareDigipin digipin={result.digipin} />
           {isLoggedIn && (
-            <button onClick={handleSave} disabled={apiLoading}>
-              Save to My Account
-            </button>
+             <SaveDigipinForm digipin={result.digipin} onSaved={() => {
+        // Optional: any action on successful save, e.g. refresh list
+      }} />
           )}
           <QrCodeViewer digipin={formattedDigipin} />
           <OpenInGoogleMaps lat={lat} lng={lng} />
