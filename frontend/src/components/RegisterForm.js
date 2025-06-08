@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { registerUser } from "../services/api";
 import { toast } from "react-toastify";
-
+import GoogleLoginButton from "./GoogleLoginButton";
 // Validation schema using Yup
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email format").required("Email is required"),
@@ -72,6 +72,9 @@ const RegisterForm = ({ onRegister }) => {
           {loading ? "Registering..." : "Register"}
         </button>
       </form>
+      <div className="text-center text-gray-500 font-medium">OR</div>
+      
+            <GoogleLoginButton onLogin={onRegister} />
     </div>
   );
 };

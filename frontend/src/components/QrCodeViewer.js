@@ -60,7 +60,7 @@ const QrCodeViewer = ({ digipin }) => {
         }}
       >
         <div className="flex justify-between items-center mb-2">
-          <h5 className="text-lg font-semibold">DIGIPIN QR</h5>
+          
           <button onClick={handleCloseModal} aria-label="Close modal">
             <X size={20} />
           </button>
