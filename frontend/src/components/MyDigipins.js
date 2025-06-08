@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { listUserDigipins, deleteUserDigipin } from "../services/api";
 import { formatDigipin } from "../utils/format";
-import Button from "./ui/button"; 
+import Button from "./ui/button";
+import QrCodeViewer from "./QrCodeViewer";  // import here
 
 const MyDigipins = () => {
   const [digipins, setDigipins] = useState([]);
@@ -57,7 +58,8 @@ const MyDigipins = () => {
                   Saved on {new Date(dp.created_at).toLocaleString()}
                 </small>
               </div>
-              <div className="space-x-2">
+              <div className="flex items-center space-x-2">
+                <QrCodeViewer digipin={dp.digipin} />
                 <Button variant="outline" onClick={() => handleCopy(dp.digipin)}>
                   Copy
                 </Button>

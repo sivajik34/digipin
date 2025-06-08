@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { getQrCodeUrl, getQrDownloadUrl } from "../services/api";
-
+import { QrCode } from "lucide-react";
 Modal.setAppElement("#root");
 
 const QrCodeViewer = ({ digipin }) => {
@@ -29,8 +29,14 @@ const QrCodeViewer = ({ digipin }) => {
 
   return (
     <div style={{ marginTop: "20px" }}>
-      <h4>QR Code for DIGIPIN</h4>
-      <button onClick={handleOpenModal}>Generate QR Code</button>
+      
+      <button
+  onClick={handleOpenModal} aria-label="Generate QR Code" 
+  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 transform"
+>
+  <QrCode size={20} />
+  
+</button>
 
       <Modal
         isOpen={modalIsOpen}

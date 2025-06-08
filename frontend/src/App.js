@@ -18,6 +18,7 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import digipincode from "./assets/digipincode.png";
 
 const GOOGLE_CLIENT_ID = "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
 function App() {
@@ -62,7 +63,7 @@ function AppContent() {
     <Router>
       <div className="App">
         <header style={{ padding: "10px", backgroundColor: "#f2f2f2" }}>
-          <h1>DIGIPIN Finder</h1>
+          <img src={digipincode} alt="DIGIPIN Logo" style={{ height: "80px", marginRight: "15px" }} />
           <nav style={{ marginBottom: "10px" }}>
             <Link to="/">Home</Link> |{" "}
             <Link to="/decode">Decode DIGIPIN</Link> |{" "}
