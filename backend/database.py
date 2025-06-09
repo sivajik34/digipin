@@ -21,3 +21,6 @@ Base = declarative_base(metadata=metadata)
 async def get_async_session() -> AsyncSession:
     async with async_session_maker() as session:
         yield session
+async def get_db() -> AsyncSession:
+    async with async_session_maker() as session:
+        yield session

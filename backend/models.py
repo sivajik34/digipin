@@ -1,9 +1,10 @@
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import Boolean, Column, String,ForeignKey, DateTime, func
+from sqlalchemy import Boolean, Column, String,ForeignKey, DateTime, func,Integer
 from backend.database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
+from geoalchemy2 import Geometry
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
@@ -11,6 +12,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     full_name = Column(String, nullable=True)
     is_oauth = Column(Boolean, default=False)
     digipins = relationship("SavedDigipin", back_populates="user")
+    phone_number = Column(String(15), unique=True, nullable=True)
   
 class SavedDigipin(Base):
     __tablename__ = "saved_digipins"
@@ -21,3 +23,10 @@ class SavedDigipin(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())    
     user = relationship("User", back_populates="digipins")
     user_friendly_name = Column(String(100), nullable=True)
+
+class ServiceArea(Base):
+    __tablename__ = "service_areas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    region = Column(Geometry(geometry_type="POLYGON", srid=4326), nullable=False)

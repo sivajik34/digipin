@@ -1,8 +1,10 @@
 import httpx
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException,Depends
 import re
 from backend.schemas.digipin_schemas import EncodeDigipinResponse, DecodeDigipinResponse, AddressResponse
-
+from backend.services.service_area_service import is_within_service_area
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.database import get_db
 router = APIRouter()
 
 ALLOWED_PATTERN = re.compile(r"^[FCJKLMPT2-9]+$", re.IGNORECASE)
@@ -195,3 +197,20 @@ async def get_address_from_digipin(
             "state": address.get("state"),
             "country": address.get("country"),
         }
+
+@router.get("/api/digipin/validate", tags=["DIGIPIN"])
+async def validate_digipin_service_area(
+    digipin: str = Query(..., description="DIGIPIN to validate"),
+    db: AsyncSession = Depends(get_db)
+):
+    clean_digipin = digipin.replace("-", "").upper()
+    if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
+        raise HTTPException(status_code=400,detail="Invalid DIGIPIN: must be exactly 10 characters using only F,C,J,K,L,M,P,T and digits 2-9")
+    coords = get_lat_lng_from_digipin(clean_digipin)
+    is_valid = await is_within_service_area(db, coords["latitude"], coords["longitude"])
+    return {
+        "digipin": clean_digipin,
+        "latitude": coords["latitude"],
+        "longitude": coords["longitude"],
+        "is_within_service_area": is_valid
+    }        
