@@ -17,7 +17,8 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import digipincode from "./assets/digipincode.png";
-
+import OptimizeRouteForm from "./components/RouteOptimizerDashboard";
+import OptimizedRoutesMap from "./components/OptimizedRoutesMap";
 const GOOGLE_CLIENT_ID =
   "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
 
@@ -36,6 +37,7 @@ function AppContent() {
   const [email, setEmail] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalContent, setModalContent] = useState("login");
+  const [optimizeRequest, setOptimizeRequest] = useState(null);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -68,6 +70,7 @@ function AppContent() {
             {isLoggedIn && (
               <Link to="/my-digipins" className="hover:underline">My DIGIPINs</Link>
             )}
+            <Link to="/optimize" className="hover:underline">Optimize Routes</Link>
             {!isLoggedIn ? (
               <>
                 <button
@@ -114,6 +117,15 @@ function AppContent() {
                 isLoggedIn ? <MyDigipins /> : <Navigate to="/" replace />
               }
             />
+            <Route
+  path="/optimize"
+  element={
+    <div className="space-y-8">
+      <OptimizeRouteForm onSubmit={(data) => setOptimizeRequest(data)} />
+      {optimizeRequest && <OptimizedRoutesMap request={optimizeRequest} />}
+    </div>
+  }
+/>
           </Routes>
         </main>
 

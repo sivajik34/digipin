@@ -51,3 +51,6 @@ export const fetchAddressFromDigipin = (digipin) =>
 
 export const googleLogin = (token) =>
   API.post("/auth/google", { token });
+
+export const optimizeRoute = (request) =>
+  API.post("/api/optimize-route", request);

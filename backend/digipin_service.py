@@ -5,8 +5,8 @@ from backend.schemas.digipin_schemas import EncodeDigipinResponse, DecodeDigipin
 from backend.services.service_area_service import is_within_service_area
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database import get_db
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel,Field
+from typing import List,Tuple
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import math
@@ -170,14 +170,9 @@ async def get_address_from_digipin(
     if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
         raise HTTPException(status_code=400, detail="Invalid DIGIPIN")
 
-    async with httpx.AsyncClient() as client:
-        decode_res = await client.get(
-            f"{DIGIPIN_API_BASE}/api/digipin/decode",
-            params={"digipin": clean_digipin}
-        )
-        decode_res.raise_for_status()
-        coords = decode_res.json()
-        lat, lng = coords["latitude"], coords["longitude"]
+    coords = get_lat_lng_from_digipin(clean_digipin)
+    lat, lng = coords["latitude"], coords["longitude"]
+    async with httpx.AsyncClient() as client:       
 
         reverse_res = await client.get(
             "https://nominatim.openstreetmap.org/reverse",
@@ -218,97 +213,158 @@ async def validate_digipin_service_area(
         "latitude": coords["latitude"],
         "longitude": coords["longitude"],
         "is_within_service_area": is_valid
-    }  
+    } 
 
-class DigipinItem(BaseModel):
+
+
+class RouteLocation(BaseModel):
     digipin: str
+    priority: int = Field(..., ge=1, le=3)
+    time_window: Tuple[int, int] = Field(..., description="Start and end time window")
 
 class OptimizeRouteRequest(BaseModel):
-    digipins: List[str]
+    depot: str
+    vehicles: int
+    locations: List[RouteLocation]
+
+class OptimizedRoute(BaseModel):
+    vehicle_id: int
+    stops: List[str]
 
 class OptimizeRouteResponse(BaseModel):
-    optimized_route: List[DigipinItem]
+    routes: List[OptimizedRoute]
 
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)) * 1000
 
+@router.post("/api/optimize-route", response_model=OptimizeRouteResponse, tags=["DIGIPIN"])
+async def optimize_route(req: OptimizeRouteRequest):
+    all_points = [RouteLocation(digipin=req.depot, priority=1, time_window=(0, 9999))] + req.locations
 
-def haversine_distance(lat1, lon1, lat2, lon2):
-    R = 6371  # Earth radius in km
-    from math import radians, cos, sin, asin, sqrt
-    dlat = radians(lat2 - lat1)
-    dlon = radians(lon2 - lon1)
-    a = sin(dlat/2)**2 + cos(radians(lat1))*cos(radians(lat2))*sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    return R * c
+    try:
+        coords = [get_lat_lng_from_digipin(loc.digipin) for loc in all_points]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-def create_distance_matrix(locations):
-    """Creates distance matrix (2D list) between all locations"""
-    size = len(locations)
-    matrix = [[0]*size for _ in range(size)]
-    for i in range(size):
-        for j in range(size):
-            if i == j:
-                matrix[i][j] = 0
-            else:
-                matrix[i][j] = int(haversine_distance(
-                    locations[i][0], locations[i][1],
-                    locations[j][0], locations[j][1]
-                ) * 1000)  # meters as int
-    return matrix
+    distance_matrix = [[int(haversine(p1['latitude'], p1['longitude'], p2['latitude'], p2['longitude']))
+                        for p2 in coords] for p1 in coords]
 
-def solve_tsp(distance_matrix):
-    """Solve TSP using OR-Tools and return route indices in order"""
-    size = len(distance_matrix)
-    manager = pywrapcp.RoutingIndexManager(size, 1, 0)  # 1 vehicle, depot=0
+    manager = pywrapcp.RoutingIndexManager(len(distance_matrix), req.vehicles, 0)
     routing = pywrapcp.RoutingModel(manager)
 
     def distance_callback(from_index, to_index):
-        from_node = manager.IndexToNode(from_index)
-        to_node = manager.IndexToNode(to_index)
-        return distance_matrix[from_node][to_node]
+        """Returns the distance between the two nodes."""
+        return distance_matrix[manager.IndexToNode(from_index)][manager.IndexToNode(to_index)]
 
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
-
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    # Setting first solution heuristic (cheapest addition)
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+    # --- START MODIFICATIONS ---
+    # Convert meters (from haversine) to minutes for travel time.
+    # Assuming average speed of 30 km/h = 30000 meters / 60 minutes = 500 meters/minute
+    # Also, add a fixed service time of 5 minutes per stop.
+    def time_callback(from_index, to_index):
+        """Returns the travel time in minutes between the two nodes, plus service time."""
+        travel_distance_m = distance_matrix[manager.IndexToNode(from_index)][manager.IndexToNode(to_index)]
+        travel_time_minutes = int(travel_distance_m / 500) # 500 meters/minute
+        service_time_minutes = 5 # Fixed service time per stop
+        return travel_time_minutes + service_time_minutes
+
+    time_callback_index = routing.RegisterTransitCallback(time_callback)
+
+    # Max slack (wait time) at a node, max cumulative time for the dimension.
+    # Set maximum travel time for a vehicle to 8 hours (480 minutes)
+    # 0 for `fix_start_cumul_to_zero` means the cumulative time at the depot starts at 0.
+    # AddDimension returns a bool, GetDimensionOrDie returns the dimension object.
+    routing.AddDimension(
+        time_callback_index,
+        30, # slack_max: allow vehicles to wait up to 30 minutes at a location if arriving early
+        480, # capacity: total travel time plus service time for a vehicle cannot exceed 480 minutes (8 hours)
+        False, # fix_start_cumul_to_zero: ensure the cumulative time at the depot (start node) is 0
+        "Time"
     )
+    time_dim = routing.GetDimensionOrDie("Time") # Retrieve the dimension object
 
-    solution = routing.SolveWithParameters(search_parameters)
+    # Set time windows for each location. These values should now be in minutes.
+    for idx, loc in enumerate(all_points):
+        index = manager.NodeToIndex(idx)
+        start, end = loc.time_window
+        time_dim.CumulVar(index).SetRange(start, end)
+        
+    # Optional: Add a penalty for not visiting locations if you want to allow non-visits
+    # based on priorities. The current setup will try hard to visit all unless impossible.
+    for i, loc in enumerate(all_points[1:], 1): # Skip depot (index 0)
+        # Higher priority (1) means lower penalty for non-visit (more critical to visit).
+        # Lower priority (3) means higher penalty for non-visit (more flexible to skip).
+        # Using a large penalty makes it unlikely to skip unless no other solution exists.
+        penalty = (4 - loc.priority) * 1000000 # Increased penalty to strongly encourage visits
+        routing.AddDisjunction([manager.NodeToIndex(i)], penalty)
 
-    if solution:
-        index = routing.Start(0)
-        route = []
+    search_params = pywrapcp.DefaultRoutingSearchParameters()
+    search_params.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC) # Use PATH_CHEAPEST_ARC for initial solution
+    search_params.local_search_metaheuristic = (
+        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH) # Use GUIDED_LOCAL_SEARCH for improvement
+    search_params.time_limit.FromSeconds(30) # Increased time limit to 30 seconds for better solutions
+    # --- END MODIFICATIONS ---
+
+    solution = routing.SolveWithParameters(search_params)
+    if not solution:
+        raise HTTPException(status_code=400, detail="No solution found (consider adjusting time windows or capacities)")
+
+    routes = []
+    for v in range(req.vehicles):
+        index = routing.Start(v)
+        stops = []
+        # Add the depot as the starting stop
+        stops.append(all_points[manager.IndexToNode(index)].digipin) 
+        
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
-            route.append(node_index)
+            # Only add if it's not the starting depot again or the end depot
+            if node_index != 0 or (node_index == 0 and len(stops) == 0): 
+                stops.append(all_points[node_index].digipin)
             index = solution.Value(routing.NextVar(index))
-        return route
-    else:
-        return None
+        # Add the final depot stop if it's different from the initial one
+        if all_points[manager.IndexToNode(index)].digipin != stops[-1]:
+            stops.append(all_points[manager.IndexToNode(index)].digipin)
+        
+        # Ensure the route ends at the depot if it's not already there
+        if len(stops) > 1 and stops[-1] != req.depot:
+             stops.append(req.depot)
 
-@router.post("/api/optimize-route", response_model=OptimizeRouteResponse, tags=["Route Optimization"])
-async def optimize_route(request: OptimizeRouteRequest):
-    digipins = request.digipins
-    if len(digipins) < 2:
-        raise HTTPException(status_code=400, detail="At least two DIGIPINs required")
+        # Filter out consecutive duplicate depot stops for cleaner routes
+        final_stops = []
+        for i, stop in enumerate(stops):
+            if i == 0 or stop != final_stops[-1] or stop != req.depot:
+                final_stops.append(stop)
+            # Handle the case where the route might look like [depot, A, depot, depot]
+            # If the last stop is a duplicate depot and not the *only* stop, remove it
+            if i > 0 and stop == req.depot and final_stops[-2] == req.depot:
+                 final_stops.pop() # Remove the redundant second depot
 
-    locations = []
-    for digipin in digipins:
-        try:
-            loc = get_lat_lng_from_digipin(digipin)
-            locations.append((loc["latitude"], loc["longitude"]))
-        except Exception:
-            raise HTTPException(status_code=400, detail=f"Invalid DIGIPIN: {digipin}")
+        routes.append(OptimizedRoute(vehicle_id=v, stops=final_stops))
 
-    distance_matrix = create_distance_matrix(locations)
+    # Post-processing to remove empty routes or routes with only depot
+    filtered_routes = []
+    for route in routes:
+        # A valid route should have at least the depot, then a location, then the depot again.
+        # Or if only one stop, it must be the depot, but this means no locations were visited.
+        # For this problem, we want to see actual stops.
+        if len(route.stops) > 1 and (len(route.stops) > 2 or route.stops[0] != route.stops[1]):
+            # Further refinement: if the route is just [depot, depot] and there were actual locations to visit,
+            # this route isn't useful for carrying locations.
+            # Only include if it contains more than just the depot and its return.
+            if len(set(route.stops)) > 1 or (len(route.stops) == 2 and route.stops[0] == req.depot and route.stops[1] == req.depot and len(req.locations) == 0):
+                 filtered_routes.append(route)
+        elif len(route.stops) == 1 and route.stops[0] == req.depot and len(req.locations) == 0:
+            # If there are no locations and only depot, include it as a valid empty route essentially
+            filtered_routes.append(route)
 
-    route_indices = solve_tsp(distance_matrix)
-    if route_indices is None:
-        raise HTTPException(status_code=500, detail="Route optimization failed")
+    return OptimizeRouteResponse(routes=filtered_routes)
 
-    optimized_route = [DigipinItem(digipin=digipins[i]) for i in route_indices]
-
-    return {"optimized_route": optimized_route}
