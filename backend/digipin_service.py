@@ -1,18 +1,20 @@
-import httpx
-from fastapi import APIRouter, Query, HTTPException,Depends
-import re
-from backend.schemas.digipin_schemas import EncodeDigipinResponse, DecodeDigipinResponse, AddressResponse
-from backend.services.service_area_service import is_within_service_area
-from sqlalchemy.ext.asyncio import AsyncSession
-from backend.database import get_db
-from pydantic import BaseModel,Field
-from typing import List,Tuple
-from ortools.constraint_solver import routing_enums_pb2
-from ortools.constraint_solver import pywrapcp
 import math
-router = APIRouter()
+import httpx
 
-ALLOWED_PATTERN = re.compile(r"^[FCJKLMPT2-9]+$", re.IGNORECASE)
+from typing import List, Tuple
+from fastapi import APIRouter, Query, HTTPException, Depends
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+from ortools.constraint_solver import routing_enums_pb2, pywrapcp
+
+from backend.schemas.digipin_schemas import (
+    EncodeDigipinResponse, DecodeDigipinResponse, AddressResponse
+)
+from backend.services.service_area_service import is_within_service_area
+from backend.database import get_db
+from backend.utils.digipin import is_valid_digipin
+
+router = APIRouter()
 
 # 4x4 grid used for digipin encoding
 DIGIPIN_GRID = [
@@ -142,8 +144,8 @@ async def get_latlng(
     - **digipin**: A valid 10-character DIGIPIN
     - **Returns**: Latitude and longitude as float values
     """
-    clean_digipin = digipin.replace("-", "").upper()
-    if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
+    clean_digipin = digipin.replace("-", "")
+    if not is_valid_digipin(clean_digipin):
         raise HTTPException(
             status_code=400,
             detail="Invalid DIGIPIN: must be exactly 10 characters using only F,C,J,K,L,M,P,T and digits 2-9"
@@ -166,8 +168,8 @@ async def get_address_from_digipin(
     - **digipin**: A valid 10-character DIGIPIN
     - **Returns**: Address fields including full address, city, state, country, and pincode
     """
-    clean_digipin = digipin.replace("-", "").upper()
-    if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
+    clean_digipin = digipin.replace("-", "")
+    if not is_valid_digipin(clean_digipin):
         raise HTTPException(status_code=400, detail="Invalid DIGIPIN")
 
     coords = get_lat_lng_from_digipin(clean_digipin)
@@ -203,8 +205,8 @@ async def validate_digipin_service_area(
     digipin: str = Query(..., description="DIGIPIN to validate"),
     db: AsyncSession = Depends(get_db)
 ):
-    clean_digipin = digipin.replace("-", "").upper()
-    if len(clean_digipin) != 10 or not ALLOWED_PATTERN.fullmatch(clean_digipin):
+    clean_digipin = digipin.replace("-", "")
+    if not is_valid_digipin(clean_digipin):
         raise HTTPException(status_code=400,detail="Invalid DIGIPIN: must be exactly 10 characters using only F,C,J,K,L,M,P,T and digits 2-9")
     coords = get_lat_lng_from_digipin(clean_digipin)
     is_valid = await is_within_service_area(db, coords["latitude"], coords["longitude"])
