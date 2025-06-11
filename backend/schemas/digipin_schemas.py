@@ -13,8 +13,9 @@ class DigipinRead(BaseModel):
     user_friendly_name: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True
+}
         
 class EncodeDigipinResponse(BaseModel):
     digipin: str

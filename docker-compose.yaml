@@ -1,0 +1,54 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    command: uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=digipin
+      - DB_USER=digipin_user
+      - DB_PASSWORD=digipin_pass      
+      - SECRET=${SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_LIFETIME_SECONDS=${JWT_LIFETIME_SECONDS}
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    command: npm start
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:8000
+
+  db:
+    image: postgis/postgis:15-3.4
+
+    restart: always
+    environment:
+      POSTGRES_DB: digipin
+      POSTGRES_USER: digipin_user
+      POSTGRES_PASSWORD: digipin_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+
