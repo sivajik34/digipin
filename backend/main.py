@@ -12,12 +12,21 @@ from uuid import UUID
 from backend.qr_router import router as qr_router
 from backend.digipin_user_router import router as user_digipin_router
 from backend.google_router import router as google_router
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi import Request
+
 fastapi_users = FastAPIUsers[User, UUID](
     get_user_manager,
     [auth_backend],
 )
 
 app = FastAPI()
+# After app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Allow React frontend to call API
 app.add_middleware(
@@ -52,7 +61,8 @@ app.include_router(user_digipin_router)
 app.include_router(google_router)
 
 @app.get("/")
-async def root():
+@limiter.limit("10/minute")
+async def root(request: Request):
     return {"message": "DIGIPIN backend with auth"}
 
 @app.get("/protected-route")
