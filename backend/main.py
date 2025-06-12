@@ -8,7 +8,7 @@ from slowapi.util import get_remote_address
 
 from backend.auth import auth_backend, current_active_user
 from backend.database import metadata
-from backend.digipin_service import router as digipin_router
+from backend.digipin_router import router as digipin_router
 from backend.digipin_user_router import router as user_digipin_router
 from backend.google_router import router as google_router
 from backend.models import User

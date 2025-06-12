@@ -19,6 +19,8 @@ import "react-toastify/dist/ReactToastify.css";
 import digipincode from "./assets/digipincode.png";
 import OptimizeRouteForm from "./components/RouteOptimizerDashboard";
 import OptimizedRoutesMap from "./components/OptimizedRoutesMap";
+import BulkQrGenerator from "./components/BulkQrGenerator";
+
 const GOOGLE_CLIENT_ID =
   "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
 
@@ -66,7 +68,8 @@ function AppContent() {
           <img src={digipincode} alt="DIGIPIN Logo" className="h-28 mb-2 md:mb-0" />
           <nav className="flex flex-wrap gap-4 text-blue-700 font-medium">
             <Link to="/" className="hover:underline">Home</Link>
-            <Link to="/decode" className="hover:underline">Decode DIGIPIN</Link>
+            <Link to="/decode" className="hover:underline">Decode DIGIPIN</Link><Link to="/bulk-qr" className="hover:underline">Bulk QR Generator</Link>
+
             {isLoggedIn && (
               <Link to="/my-digipins" className="hover:underline">My DIGIPINs</Link>
             )}
@@ -125,7 +128,8 @@ function AppContent() {
       {optimizeRequest && <OptimizedRoutesMap request={optimizeRequest} />}
     </div>
   }
-/>
+/><Route path="/bulk-qr" element={<BulkQrGenerator />} />
+
           </Routes>
         </main>
 

@@ -31,11 +31,29 @@ export const registerUser = (email, password) =>
 export const decodeDigipin = (digipin) =>
   API.get("/api/latlng", { params: { digipin } });
 
-export const getQrCodeUrl = (digipin) =>
-  `${process.env.REACT_APP_API_URL}/api/qr?digipin=${digipin}`;
+// Fetches the QR code image (for preview, not download)
+export const getQrCode = (digipin, imgFormat = "png", fmt = "json") =>
+  API.get("/api/qr", {
+    params: {
+      digipin,
+      img_format: imgFormat,
+      format: fmt,
+    },
+    responseType: "blob", // important for image response
+  });
 
-export const getQrDownloadUrl = (digipin) =>
-  `${process.env.REACT_APP_API_URL}/api/qr/download?digipin=${digipin}`;
+// Fetches the downloadable QR code image
+export const getQrCodeDownload = (digipin, imgFormat = "png", fmt = "json") =>
+  API.get("/api/qr/download", {
+    params: {
+      digipin,
+      img_format: imgFormat,
+      format: fmt,
+    },
+    responseType: "blob", // ensures you receive binary for download
+  });
+
+
 
 export const saveUserDigipin = (digipin, user_friendly_name) =>
   API.post("/api/digipin/user/save", { digipin, user_friendly_name });
