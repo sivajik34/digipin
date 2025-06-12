@@ -30,6 +30,7 @@ httpcore==1.0.9
 httpx==0.28.1
 idna==3.10
 immutabledict==4.2.1
+iniconfig==2.1.0
 limits==5.2.0
 makefun==1.16.0
 Mako==1.3.10
@@ -40,6 +41,7 @@ ortools==9.13.4784
 packaging==25.0
 pandas==2.3.0
 pillow==11.2.1
+pluggy==1.6.0
 protobuf==6.31.1
 psycopg2-binary==2.9.10
 pwdlib==0.2.1
@@ -48,8 +50,11 @@ pyasn1_modules==0.4.2
 pycparser==2.22
 pydantic==2.11.5
 pydantic_core==2.33.2
+Pygments==2.19.1
 PyJWT==2.10.1
 pymongo==4.13.0
+pytest==8.4.0
+pytest-asyncio==1.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 python-multipart==0.0.20

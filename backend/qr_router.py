@@ -57,23 +57,19 @@ async def get_qr_image(digipin: str = Query(..., min_length=1, max_length=10),fo
     clean_digipin = digipin.replace("-", "")    
     if not is_valid_digipin(clean_digipin):
         raise HTTPException(status_code=400, detail="Invalid DIGIPIN format")    
-    buffer = generate_qr_image(clean_digipin, fmt=format)   
+    buffer = generate_qr_image(clean_digipin, fmt=format)
 
     return StreamingResponse(buffer, media_type="image/png")
 
 
 @router.get("/api/qr/download", summary="Download QR code for DIGIPIN",tags=["DIGIPIN"])
-async def download_qr_image(digipin: str = Query(..., min_length=1, max_length=10)):
+async def download_qr_image(digipin: str = Query(..., min_length=1, max_length=10),format: str = Query("json", enum=["text", "json", "vcard"])):
     """Returns a downloadable QR code PNG image for a given DIGIPIN"""
     clean_digipin = digipin.replace("-", "")
     if not is_valid_digipin(clean_digipin):
-        raise HTTPException(status_code=400, detail="Invalid DIGIPIN format")
-
-    content = generate_qr_content(clean_digipin)
-    buffer = generate_qr_image_from_url(content)
-
+        raise HTTPException(status_code=400, detail="Invalid DIGIPIN format")    
+    buffer = generate_qr_image(clean_digipin, fmt=format)
     headers = {
         "Content-Disposition": f"attachment; filename=digipin_{digipin}.png"
     }
-
     return StreamingResponse(buffer, media_type="image/png", headers=headers)
