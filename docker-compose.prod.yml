@@ -7,6 +7,6 @@ services:
       - "3000:3000"
     environment:      
       - REACT_APP_API_URL=http://backend:8000
-    command: ["serve", "-s", "build", "-l", "3000", "--single"]   # explicitly override command to production serve
+    command: ["serve", "-s", "build", "-l", "3000"]   # explicitly override command to production serve
     volumes: []  # override volumes to empty list to remove dev mounts  
 

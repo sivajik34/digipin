@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npm run build --verbose
+RUN ls -l build
 
 # Stage 2 - Serve the build
 FROM node:20-slim
@@ -12,5 +13,5 @@ RUN npm install -g serve
 WORKDIR /app
 COPY --from=builder /app/build ./build
 EXPOSE 3000
-CMD ["serve", "-s", "build", "-l", "3000", "--single"]
+CMD ["serve", "-s", "build", "-l", "3000"]
 
