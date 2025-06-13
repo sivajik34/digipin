@@ -101,7 +101,7 @@ const DecodeDigipin = () => {
         <input
           value={digipin}
           onChange={handleChange}
-          placeholder="Enter DIGIPIN (e.g. CCC-L94-44LC)"
+          placeholder="Enter DIGIPIN (e.g. 5J8-4CC-7FM7)"
           maxLength={13}
           required
           disabled={loading}

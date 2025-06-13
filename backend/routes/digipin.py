@@ -1,9 +1,8 @@
 import httpx
-from typing import List, Tuple
 from fastapi import APIRouter, Query, HTTPException, Depends
-from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from ortools.constraint_solver import routing_enums_pb2, pywrapcp
+from schemas.digipin_schemas import OptimizeRouteResponse,OptimizeRouteRequest,OptimizedRoute,RouteLocation
 
 from schemas.digipin_schemas import (
     EncodeDigipinResponse, DecodeDigipinResponse, AddressResponse
@@ -31,7 +30,6 @@ async def get_digipin_by_lat_lng(
         return {"digipin": digipin}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.get("/api/latlng", response_model=DecodeDigipinResponse, tags=["DIGIPIN"])
 async def get_latlng(
@@ -120,25 +118,6 @@ async def validate_digipin_service_area(
         "longitude": coords["longitude"],
         "is_within_service_area": is_valid
     } 
-
-
-
-class RouteLocation(BaseModel):
-    digipin: str
-    priority: int = Field(..., ge=1, le=3)
-    time_window: Tuple[int, int] = Field(..., description="Start and end time window")
-
-class OptimizeRouteRequest(BaseModel):
-    depot: str
-    vehicles: int
-    locations: List[RouteLocation]
-
-class OptimizedRoute(BaseModel):
-    vehicle_id: int
-    stops: List[str]
-
-class OptimizeRouteResponse(BaseModel):
-    routes: List[OptimizedRoute]
 
 @router.post("/api/optimize-route", response_model=OptimizeRouteResponse, tags=["DIGIPIN"])
 async def optimize_route(req: OptimizeRouteRequest):

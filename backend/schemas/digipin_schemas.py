@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from uuid import UUID
 from datetime import datetime
-from typing import Optional
+from typing import Optional,Tuple,List
 
 class DigipinCreate(BaseModel):
     digipin: str
@@ -32,3 +32,20 @@ class AddressResponse(BaseModel):
     city: str | None
     state: str | None
     country: str | None        
+
+class RouteLocation(BaseModel):
+    digipin: str
+    priority: int = Field(..., ge=1, le=3)
+    time_window: Tuple[int, int] = Field(..., description="Start and end time window")
+
+class OptimizeRouteRequest(BaseModel):
+    depot: str
+    vehicles: int
+    locations: List[RouteLocation]
+
+class OptimizedRoute(BaseModel):
+    vehicle_id: int
+    stops: List[str]
+
+class OptimizeRouteResponse(BaseModel):
+    routes: List[OptimizedRoute]
