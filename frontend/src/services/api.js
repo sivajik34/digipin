@@ -72,3 +72,10 @@ export const googleLogin = (token) =>
 
 export const optimizeRoute = (request) =>
   API.post("/api/optimize-route", request);
+
+export const downloadProofOfLocation = (digipin) =>
+  API.post(
+    "/api/proof-of-location",
+    { digipin },
+    { responseType: "blob" } // PDF is binary
+  );

@@ -6,17 +6,16 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from backend.auth import auth_backend, current_active_user
-from backend.database import metadata
-from backend.digipin_router import router as digipin_router
-from backend.digipin_user_router import router as user_digipin_router
-from backend.google_router import router as google_router
-from backend.models import User
-from backend.qr_router import router as qr_router
-from backend.schemas.user_schemas import UserRead, UserCreate, UserUpdate
-from backend.user_manager import get_user_manager
+from auth import auth_backend, current_active_user
+from digipin_router import router as digipin_router
+from digipin_user_router import router as user_digipin_router
+from google_router import router as google_router
+from models import User
+from qr_router import router as qr_router
+from schemas.user_schemas import UserRead, UserCreate, UserUpdate
+from user_manager import get_user_manager
 from fastapi_users import FastAPIUsers
-
+from routes import proof
 # Initialize FastAPI Users
 fastapi_users = FastAPIUsers[User, UUID](
     get_user_manager,
@@ -71,6 +70,7 @@ def include_routers():
     app.include_router(qr_router)
     app.include_router(user_digipin_router)
     app.include_router(google_router)
+    app.include_router(proof.router)
 
 
 include_routers()

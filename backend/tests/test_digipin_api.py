@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from fastapi import status
 import httpx
-from backend.main import app  # Adjust import based on your entry point
+from main import app  # Adjust import based on your entry point
 
 
 @pytest.mark.asyncio
@@ -29,8 +29,8 @@ async def test_validate_digipin(monkeypatch):
     async def fake_service_area(db, lat, lng):
         return True
 
-    import backend.digipin_router
-    monkeypatch.setattr(backend.digipin_router, "is_within_service_area", fake_service_area)
+    import digipin_router
+    monkeypatch.setattr(digipin_router, "is_within_service_area", fake_service_area)
 
     async with AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/api/digipin/validate", params={"digipin": "425-FF5-8KMT"})

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import uuid4
-from backend.database import get_async_session
-from backend.auth import current_active_user
-from backend.models import SavedDigipin, User
-from backend.schemas.digipin_schemas import DigipinCreate, DigipinRead
+from database import get_async_session
+from auth import current_active_user
+from models import SavedDigipin, User
+from schemas.digipin_schemas import DigipinCreate, DigipinRead
 from typing import List
 from uuid import  UUID
 router = APIRouter(prefix="/api/digipin/user", tags=["user-digipins"])

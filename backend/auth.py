@@ -1,9 +1,9 @@
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy
-from backend.user_manager import get_user_db
-from backend.models import User
+from user_manager import get_user_db
+from models import User
 from fastapi import Depends
-from backend.config import SECRET,JWT_LIFETIME_SECONDS
+from config import SECRET,JWT_LIFETIME_SECONDS
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 

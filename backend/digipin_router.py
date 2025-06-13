@@ -5,12 +5,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from ortools.constraint_solver import routing_enums_pb2, pywrapcp
 
-from backend.schemas.digipin_schemas import (
+from schemas.digipin_schemas import (
     EncodeDigipinResponse, DecodeDigipinResponse, AddressResponse
 )
-from backend.services.service_area_service import is_within_service_area
-from backend.database import get_db
-from backend.utils.digipin import is_valid_digipin,get_digipin,get_lat_lng_from_digipin,haversine
+from services.service_area_service import is_within_service_area
+from database import get_db
+from utils.digipin import is_valid_digipin,get_digipin,get_lat_lng_from_digipin,haversine
 
 router = APIRouter()
 

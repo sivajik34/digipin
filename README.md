@@ -147,7 +147,7 @@ How to Run
 
 2. Run the server:
    ```
-   uvicorn backend.main:app --reload
+   uvicorn main:app --reload
    ```
 
 

@@ -3,9 +3,9 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from backend.models import User
-from backend.database import get_async_session
-from backend.auth import create_jwt_token
+from models import User
+from database import get_async_session
+from auth import create_jwt_token
 from pydantic import BaseModel
 
 class GoogleToken(BaseModel):

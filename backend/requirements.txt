@@ -10,6 +10,7 @@ bcrypt==4.3.0
 cachetools==5.5.2
 certifi==2025.4.26
 cffi==1.17.1
+chardet==5.2.0
 charset-normalizer==3.4.2
 click==8.2.1
 colorama==0.4.6
@@ -60,6 +61,7 @@ python-dotenv==1.1.0
 python-multipart==0.0.20
 pytz==2025.2
 qrcode==8.2
+reportlab==4.4.1
 requests==2.32.3
 rsa==4.9.1
 six==1.17.0

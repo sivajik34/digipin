@@ -7,7 +7,7 @@ import os
 
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from backend.config import DATABASE_URL
+from config import DATABASE_URL
 
 # Alembic Config object
 config = context.config
@@ -26,8 +26,8 @@ if DATABASE_URL is None:
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # Import your models and Base here
-from backend.database import Base  # Change this to your real import
-import backend.models
+from database import Base  # Change this to your real import
+import models
 target_metadata = Base.metadata
 
 

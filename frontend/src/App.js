@@ -20,7 +20,7 @@ import digipincode from "./assets/digipincode.png";
 import OptimizeRouteForm from "./components/RouteOptimizerDashboard";
 import OptimizedRoutesMap from "./components/OptimizedRoutesMap";
 import BulkQrGenerator from "./components/BulkQrGenerator";
-
+import ProofOfLocation from "./components/ProofOfLocation";
 const GOOGLE_CLIENT_ID =
   "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
 
@@ -106,6 +106,7 @@ function AppContent() {
                 </button>
               </>
             )}
+            <Link to="/proof" className="hover:underline">Proof of Location</Link>
           </nav>
         </header>
 
@@ -129,7 +130,7 @@ function AppContent() {
     </div>
   }
 /><Route path="/bulk-qr" element={<BulkQrGenerator />} />
-
+<Route path="/proof" element={<ProofOfLocation />} />
           </Routes>
         </main>
 

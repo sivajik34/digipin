@@ -3,10 +3,10 @@ from qrcode.image.svg import SvgImage
 from io import BytesIO
 from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from backend.utils.digipin import is_valid_digipin
-from backend.utils.digipin import get_lat_lng_from_digipin
+from utils.digipin import is_valid_digipin
+from utils.digipin import get_lat_lng_from_digipin
 import logging
-from backend.utils.Log import Logger
+from utils.Log import Logger
 import zipfile
 from tempfile import NamedTemporaryFile
 from pydantic import BaseModel
