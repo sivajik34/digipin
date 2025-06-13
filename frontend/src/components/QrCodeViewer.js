@@ -10,7 +10,7 @@ Modal.setAppElement("#root");
 const QrCodeViewer = ({ digipin }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [showQr, setShowQr] = useState(false);
-  const [format, setFormat] = useState("png"); // or "svg"
+  const [format, setFormat] = useState("png");
   const [qrBlobUrl, setQrBlobUrl] = useState(null);
   const [downloadBlobUrl, setDownloadBlobUrl] = useState(null);
 
@@ -25,61 +25,48 @@ const QrCodeViewer = ({ digipin }) => {
   const handleCloseModal = () => {
     setModalIsOpen(false);
     setShowQr(false);
+    setQrBlobUrl(null);
+    setDownloadBlobUrl(null);
   };
 
   useEffect(() => {
-    if (modalIsOpen) {
-      const timer = setTimeout(() => setShowQr(true), 150);
-      return () => clearTimeout(timer);
-    }
+    if (!modalIsOpen) return;
+
+    const timer = setTimeout(() => setShowQr(true), 150);
+    return () => clearTimeout(timer);
   }, [modalIsOpen]);
 
   useEffect(() => {
-    if (!modalIsOpen) return;
-  
-    const fetchQR = async () => {
+    if (!modalIsOpen || !showQr) return;
+
+    const fetchQr = async () => {
       try {
-        const qrResp = await getQrCode(digipin, format);
-        const downloadResp = await getQrCodeDownload(digipin, format);
-  
-        if (format === "svg") {
-          const svgMimeType = "image/svg+xml;charset=utf-8";
-          const svgText = qrResp.data;
-          const downloadText = downloadResp.data;
-  
-          const svgBlob = new Blob([svgText], { type: svgMimeType });
-          const svgDownloadBlob = new Blob([downloadText], { type: svgMimeType });
-  
-          const svgUrl = URL.createObjectURL(svgBlob);
-          const svgDownloadUrl = URL.createObjectURL(svgDownloadBlob);
-  
-          setQrBlobUrl(svgUrl);
-          setDownloadBlobUrl(svgDownloadUrl);
-        } else {
-          const pngBlobUrl = URL.createObjectURL(qrResp.data);
-          const pngDownloadUrl = URL.createObjectURL(downloadResp.data);
-  
-          setQrBlobUrl(pngBlobUrl);
-          setDownloadBlobUrl(pngDownloadUrl);
-        }
-  
-        setShowQr(true);
-      } catch (err) {
-        toast.error("Failed to load QR code");
+        const qrRes = await getQrCode(digipin, format);
+        const blob = new Blob(
+          [qrRes.data],
+          { type: format === "svg" ? "image/svg+xml" : "image/png" }
+        );
+        const url = URL.createObjectURL(blob);
+        setQrBlobUrl(url);
+      } catch {
+        toast.error("Failed to load QR preview.");
+      }
+
+      try {
+        const downloadRes = await getQrCodeDownload(digipin, format);
+        const blob = new Blob(
+          [downloadRes.data],
+          { type: format === "svg" ? "image/svg+xml" : "image/png" }
+        );
+        const url = URL.createObjectURL(blob);
+        setDownloadBlobUrl(url);
+      } catch {
+        toast.error("Failed to prepare QR download.");
       }
     };
-  
-    fetchQR();
-  }, [modalIsOpen, format, digipin]);
-  
-  
 
-  useEffect(() => {
-    return () => {
-      if (qrBlobUrl) URL.revokeObjectURL(qrBlobUrl);
-      if (downloadBlobUrl) URL.revokeObjectURL(downloadBlobUrl);
-    };
-  }, [qrBlobUrl, downloadBlobUrl]);
+    fetchQr();
+  }, [digipin, format, modalIsOpen, showQr]);
 
   return (
     <div className="mt-4 text-center">
@@ -113,6 +100,7 @@ const QrCodeViewer = ({ digipin }) => {
 
         <p className="text-sm text-gray-600 mb-2">DIGIPIN: {digipin}</p>
 
+        {/* Format Toggle */}
         <div className="mb-3">
           <label className="mr-2 text-sm">Format:</label>
           <select
@@ -125,25 +113,24 @@ const QrCodeViewer = ({ digipin }) => {
           </select>
         </div>
 
-        {showQr && (
+        {showQr && qrBlobUrl && (
           <>
             {format === "svg" ? (
-             <object
-             data={qrBlobUrl}
-             type="image/svg+xml"
-             className="mx-auto my-4 border rounded"
-             style={{ width: "200px", height: "200px", display: "block" }}
-             onError={() => toast.error("Failed to load SVG QR code.")}
-           >
-             SVG Not Supported
-           </object>
-           
+              <object
+                data={qrBlobUrl}
+                type="image/svg+xml"
+                className="mx-auto my-4 border rounded"
+                style={{ width: "256px", height: "256px", display: "block" }}
+                onError={() => toast.error("Failed to load SVG QR code.")}
+              >
+                SVG Not Supported
+              </object>
             ) : (
               <img
                 src={qrBlobUrl}
                 alt={`QR for ${digipin}`}
-                width="200"
-                height="200"
+                width="256"
+                height="256"
                 className="mx-auto my-4 border rounded"
                 onError={() => toast.error("Failed to load PNG QR code.")}
               />
