@@ -1,10 +1,7 @@
-import qrcode
-from qrcode.image.svg import SvgImage
 from io import BytesIO
 from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from utils.digipin import is_valid_digipin
-from utils.digipin import get_lat_lng_from_digipin
+from utils.digipin import is_valid_digipin,generate_qr_image,get_lat_lng_from_digipin
 import logging
 from utils.Log import Logger
 import zipfile
@@ -18,54 +15,6 @@ class BulkQrRequest(BaseModel):
     digipins: List[str]
     format: Literal["text", "json", "vcard"] = "json"
     img_format: Literal["png", "svg"] = "png"
-
-
-def generate_qr_content(digipin: str,fmt: str = "json") -> str:    
-    try:
-        result= get_lat_lng_from_digipin(digipin)
-        #Logging.info(result["latitude"])
-        #Logging.info(result["longitude"])
-        latitude=result["latitude"]
-        longitude=result["longitude"]
-    except Exception as e:
-        Logging.error(f"Failed to decode DIGIPIN: {e}")
-        raise HTTPException(status_code=400, detail="Failed to decode DIGIPIN")
-    maps_url = f"https://www.google.com/maps?q={latitude},{longitude}"
-    if fmt == "json":
-        import json
-        return json.dumps({
-            "digipin": digipin,
-            "location": {
-                "lat": latitude,
-                "lng": longitude
-            },
-            "maps_url": maps_url
-        }, indent=2)
-    
-    elif fmt == "vcard":
-        return f"""BEGIN:VCARD
-VERSION:4.0
-LABEL;TYPE=home:{digipin}
-GEO:geo:{latitude},{longitude}
-URL:{maps_url}
-END:VCARD"""
-    
-    return f"DIGIPIN: {digipin}\nGoogle Maps: {maps_url}"
-
-def generate_qr_image(digipin: str, fmt: str = "json", img_format: str = "png") -> BytesIO:   
-    content = generate_qr_content(digipin, fmt)
-    if img_format == "svg":
-        img = qrcode.make(content, image_factory=SvgImage)
-        buffer = BytesIO()
-        img.save(buffer)
-        buffer.seek(0)
-        return buffer
-    else:
-        img = qrcode.make(content)
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-        return buffer
 
 @router.get("/api/qr", summary="Generate QR code image for DIGIPIN",tags=["DIGIPIN"])
 async def get_qr_image(digipin: str = Query(..., min_length=1, max_length=10),

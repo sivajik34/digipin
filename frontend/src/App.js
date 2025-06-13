@@ -73,6 +73,7 @@ function AppContent() {
             {isLoggedIn && (
               <Link to="/my-digipins" className="hover:underline">My DIGIPINs</Link>
             )}
+            <Link to="/proof" className="hover:underline">Proof of Location</Link>
             <Link to="/optimize" className="hover:underline">Optimize Routes</Link>
             {!isLoggedIn ? (
               <>
@@ -106,7 +107,7 @@ function AppContent() {
                 </button>
               </>
             )}
-            <Link to="/proof" className="hover:underline">Proof of Location</Link>
+            
           </nav>
         </header>
 

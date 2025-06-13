@@ -1,7 +1,14 @@
 #backend/utils/digipin.py
 import re
 import math
-
+import qrcode
+from qrcode.image.svg import SvgImage
+from xml.etree import ElementTree as ET
+from io import BytesIO
+import logging
+from utils.Log import Logger
+from fastapi import HTTPException
+Logging = Logger(name="utils.digipin", log_file="backend/Logs/app.log", level=logging.DEBUG)
 DIGIPIN_ALLOWED_PATTERN = re.compile(r"^[FCJKLMPT2-9]+$")
 
 # 4x4 grid used for digipin encoding
@@ -109,4 +116,68 @@ def haversine(lat1, lon1, lat2, lon2):
     dlambda = math.radians(lon2 - lon1)
     a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)) * 1000
+
+def generate_qr_content(digipin: str,fmt: str = "json") -> str:    
+    try:
+        result= get_lat_lng_from_digipin(digipin)
+        #Logging.info(result["latitude"])
+        #Logging.info(result["longitude"])
+        latitude=result["latitude"]
+        longitude=result["longitude"]
+    except Exception as e:
+        Logging.error(f"Failed to decode DIGIPIN: {e}")
+        raise HTTPException(status_code=400, detail="Failed to decode DIGIPIN")
+    maps_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+    if fmt == "json":
+        import json
+        return json.dumps({
+            "digipin": digipin,
+            "location": {
+                "lat": latitude,
+                "lng": longitude
+            },
+            "maps_url": maps_url
+        }, indent=2)
+    
+    elif fmt == "vcard":
+        return f"""BEGIN:VCARD
+VERSION:4.0
+LABEL;TYPE=home:{digipin}
+GEO:geo:{latitude},{longitude}
+URL:{maps_url}
+END:VCARD"""
+    
+    return f"DIGIPIN: {digipin}\nGoogle Maps: {maps_url}"
+
+def generate_qr_image(digipin: str, fmt: str = "json", img_format: str = "png") -> BytesIO:
+    content = generate_qr_content(digipin, fmt)
+
+    if img_format == "svg":
+        img = qrcode.make(content, image_factory=SvgImage)
+        buffer = BytesIO()
+        img.save(buffer)
+        buffer.seek(0)
+
+        # Add viewBox to SVG for proper scaling
+        svg_tree = ET.parse(buffer)
+        root = svg_tree.getroot()
+
+        # Add or fix width, height, and viewBox
+        root.set("width", "256")
+        root.set("height", "256")
+        root.set("viewBox", "0 0 256 256")
+
+        # Save modified SVG back to buffer
+        buffer_out = BytesIO()
+        svg_tree.write(buffer_out, encoding="utf-8", xml_declaration=True)
+        buffer_out.seek(0)
+        return buffer_out
+
+    else:
+        img = qrcode.make(content)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return buffer
+
 

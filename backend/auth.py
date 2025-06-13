@@ -23,7 +23,7 @@ fastapi_users = FastAPIUsers[User, int](
 
 current_active_user = fastapi_users.current_user(active=True)
 
-from fastapi_users.authentication.strategy.jwt import JWTStrategy as JWTStrategyClass
+#from fastapi_users.authentication.strategy.jwt import JWTStrategy as JWTStrategyClass
 
 # Optional: cache strategy instance if used multiple times
 _jwt_strategy = None

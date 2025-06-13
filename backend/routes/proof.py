@@ -7,7 +7,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 
 from utils.digipin import is_valid_digipin, get_lat_lng_from_digipin
-from qr_router import generate_qr_image  # reuse your own function
+from routes.qrcode import generate_qr_image
 
 router = APIRouter()
 

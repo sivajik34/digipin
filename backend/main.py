@@ -7,11 +7,11 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from auth import auth_backend, current_active_user
-from digipin_router import router as digipin_router
-from digipin_user_router import router as user_digipin_router
-from google_router import router as google_router
+from routes.digipin import router as digipin_router
+from routes.digipin_user import router as user_digipin_router
+from routes.google import router as google_router
 from models import User
-from qr_router import router as qr_router
+from routes.qrcode import router as qr_router
 from schemas.user_schemas import UserRead, UserCreate, UserUpdate
 from user_manager import get_user_manager
 from fastapi_users import FastAPIUsers
