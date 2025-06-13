@@ -116,16 +116,6 @@ const DecodeDigipin = () => {
           {loading ? "Loading..." : "Get Coordinates"}
         </button>
       </form>
-
-      <LocationMap
-        marker={
-          latlng && !isNaN(latlng.lat) && !isNaN(latlng.lng)
-            ? { lat: latlng.lat, lng: latlng.lng }
-            : null
-        }
-        onLocationSelect={handleMapClick}
-      />
-
       {latlng && (
         <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-200 shadow-inner max-w-xl">
           <p className="text-lg">
@@ -136,6 +126,16 @@ const DecodeDigipin = () => {
           </p>
         </div>
       )}
+      <LocationMap
+        marker={
+          latlng && !isNaN(latlng.lat) && !isNaN(latlng.lng)
+            ? { lat: latlng.lat, lng: latlng.lng }
+            : null
+        }
+        onLocationSelect={handleMapClick}
+      />
+
+    
     </div>
   );
 };

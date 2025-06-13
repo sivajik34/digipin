@@ -60,10 +60,20 @@ const GetDigipin = ({ isLoggedIn }) => {
           setGeoLoading(false);
         }
       },
-      () => {
+      (err) => {
+        console.error("Geolocation Error:", err);
         setGeoLoading(false);
-        setLocationError("Location permission denied or failed.");
+        if (err.code === 1) {
+          setLocationError("Location permission denied by the user.");
+        } else if (err.code === 2) {
+          setLocationError("Position unavailable.");
+        } else if (err.code === 3) {
+          setLocationError("Location request timed out.");
+        } else {
+          setLocationError("An unknown geolocation error occurred.");
+        }
       }
+      
     );
   }, []);
 
