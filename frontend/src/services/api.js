@@ -28,7 +28,7 @@ export const registerUser = (email, password) =>
     password,
   });
 
-export const decodeDigipin = (digipin) =>
+export const getLatlng = (digipin) =>
   API.get("/api/latlng", { params: { digipin } });
 
 export const getQrCode = (digipin, imgFormat = "png", fmt = "json") =>

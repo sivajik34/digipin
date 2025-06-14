@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { decodeDigipin, optimizeRoute } from "../services/api";
+import { getLatlng, optimizeRoute } from "../services/api";
 
 const COLORS = ["red", "blue", "green", "orange", "purple", "cyan"];
 
@@ -20,7 +20,7 @@ const OptimizedRoutesMap = ({ request }) => {
       const pins = [...new Set(res.data.routes.flatMap(r => r.stops))];
       const coordMap = {};
       for (const pin of pins) {
-        const resp = await decodeDigipin(pin);
+        const resp = await getLatlng(pin);
         coordMap[pin] = [resp.data.latitude, resp.data.longitude];
       }
       setCoordinates(coordMap);

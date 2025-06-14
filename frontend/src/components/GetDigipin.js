@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { saveUserDigipin } from "../services/api";
+//import { saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
 import ShareDigipin from "./ShareDigipin";
 import LocationMap from "./LocationMap";
@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import OpenInGoogleMaps from "./OpenInGoogleMaps";
 import SaveDigipinForm from "./SaveDigipinForm";
 import { useDigipin } from "../hooks/useDigipin";
+import { Copy } from "lucide-react";
+
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -16,6 +18,7 @@ const GetDigipin = ({ isLoggedIn }) => {
   const [locationError, setLocationError] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
+  const [locationAccuracy, setLocationAccuracy] = useState(null); // in meters
 
   const { encodeDigipin } = useDigipin();
 
@@ -24,6 +27,8 @@ const GetDigipin = ({ isLoggedIn }) => {
     const storedLng = sessionStorage.getItem("digipin_lng");
     const storedDigipin = sessionStorage.getItem("digipin_result");
     const storedFormatted = sessionStorage.getItem("digipin_formatted");
+    const storedAccuracy = sessionStorage.getItem("digipin_accuracy");
+    if (storedAccuracy) setLocationAccuracy(parseInt(storedAccuracy));
 
     if (storedLat && storedLng && storedDigipin && storedFormatted) {
       setLat(storedLat);
@@ -43,8 +48,10 @@ const GetDigipin = ({ isLoggedIn }) => {
       async (pos) => {
         const latitude = pos.coords.latitude.toFixed(6);
         const longitude = pos.coords.longitude.toFixed(6);
+        const accuracy = Math.round(pos.coords.accuracy);
         setLat(latitude);
         setLng(longitude);
+        setLocationAccuracy(accuracy);
         try {
           setApiLoading(true);
           const res = await encodeDigipin(latitude, longitude);
@@ -55,6 +62,7 @@ const GetDigipin = ({ isLoggedIn }) => {
 
           sessionStorage.setItem("digipin_lat", latitude);
           sessionStorage.setItem("digipin_lng", longitude);
+          sessionStorage.setItem("digipin_accuracy", accuracy);
           sessionStorage.setItem("digipin_result", JSON.stringify({ digipin: res.digipin, source: res.source }));
           sessionStorage.setItem("digipin_formatted", clean);
         } catch (err) {
@@ -114,12 +122,19 @@ const GetDigipin = ({ isLoggedIn }) => {
   const handleSubmitFromMap = async (latVal, lngVal) => {
     setLat(latVal.toFixed(6));
     setLng(lngVal.toFixed(6));
-
+    setLocationAccuracy(null);
     if (latVal < 8 || latVal > 37 || lngVal < 68 || lngVal > 98)
       return toast.warn("Selected location is outside India.");
 
     await fetchAndSetDigipin(latVal, lngVal);
   };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => toast.success("DIGIPIN copied!"))
+      .catch(() => toast.error("Failed to copy DIGIPIN."));
+  };
+  
 
   return (
     <div className="w-full p-4 space-y-6">
@@ -158,9 +173,17 @@ const GetDigipin = ({ isLoggedIn }) => {
       {result && (
         <div className="bg-gray-50 p-4 rounded shadow space-y-4">
           <div className="flex flex-wrap gap-4 justify-center">
-            <p className="text-lg font-semibold">
-              DIGIPIN: <span className="text-blue-800">{result.digipin}</span>
-            </p>
+          <div className="flex items-center gap-2 text-lg font-semibold">
+  <span>DIGIPIN: <span className="text-blue-800">{result.digipin}</span></span>
+  <button
+    onClick={() => copyToClipboard(result.digipin)}
+    className="text-gray-600 hover:text-black"
+    title="Copy DIGIPIN"
+  >
+    <Copy size={20} />
+  </button>
+</div>
+
 
             {isLoggedIn && (
               <SaveDigipinForm
@@ -174,6 +197,18 @@ const GetDigipin = ({ isLoggedIn }) => {
             <QrCodeViewer digipin={formattedDigipin} />
             <OpenInGoogleMaps lat={lat} lng={lng} />
             <ShareDigipin digipin={result.digipin} />
+            {locationAccuracy !== null ? (
+  <p className="text-sm text-gray-500">
+    Location accuracy: ±
+    {locationAccuracy >= 1000
+      ? `${(locationAccuracy / 1000).toFixed(1)} km`
+      : `${locationAccuracy} meters`}
+  </p>
+) : (
+  <p className="text-sm text-yellow-600">Location selected manually</p>
+)}
+
+
           </div>
           <LocationMap
             onLocationSelect={handleSubmitFromMap}

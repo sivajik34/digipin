@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   listUserDigipins,
   deleteUserDigipin,
-  decodeDigipin,
+  getLatlng,
 } from "../services/api";
 import { formatDigipin } from "../utils/format";
 import QrCodeViewer from "./QrCodeViewer";
@@ -61,7 +61,7 @@ const MyDigipins = () => {
     setLoadingCoords((prev) => ({ ...prev, [dp.id]: true }));
 
     try {
-      const res = await decodeDigipin(dp.digipin);
+      const res = await getLatlng(dp.digipin);
       const { latitude, longitude } = res.data;
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);

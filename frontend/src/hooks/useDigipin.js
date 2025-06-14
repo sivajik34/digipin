@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { encodeDigipinOffline, decodeDigipinOffline } from "../utils/digipin";
-import { fetchDigipin, decodeDigipin } from "../services/api";
+import { fetchDigipin, getLatlng } from "../services/api";
 import { toast } from "react-toastify";
 
 export const useDigipin = () => {
@@ -51,7 +51,7 @@ export const useDigipin = () => {
     }
 
     try {
-      const res = await decodeDigipin(cleaned);
+      const res = await getLatlng(cleaned);
       const { latitude, longitude } = res?.data || {};
       if (!latitude || !longitude) throw new Error("Invalid coordinates");
 
