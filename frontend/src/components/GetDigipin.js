@@ -6,6 +6,7 @@ import LocationMap from "./LocationMap";
 import { toast } from "react-toastify";
 import OpenInGoogleMaps from "./OpenInGoogleMaps";
 import SaveDigipinForm from "./SaveDigipinForm";
+import { encodeDigipinOffline } from "../utils/digipin";
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -80,17 +81,35 @@ const GetDigipin = ({ isLoggedIn }) => {
   const fetchAndSetDigipin = async (latVal, lngVal) => {
     try {
       setApiLoading(true);
+  
+      if (!navigator.onLine) {
+        // offline fallback
+        const encoded = encodeDigipinOffline(latVal, lngVal);
+        const fakeResult = {
+          digipin: encoded,
+          source: "offline"
+        };
+        setResult(fakeResult);
+        setFormattedDigipin(encoded.replace(/-/g, ""));
+        sessionStorage.setItem("digipin_result", JSON.stringify(fakeResult));
+        sessionStorage.setItem("digipin_formatted", encoded.replace(/-/g, ""));
+        return true;
+      }
+  
       const res = await fetchDigipin(latVal, lngVal);
       setResult(res.data);
       setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
+      sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
+      sessionStorage.setItem("digipin_formatted", res.data.digipin.replace(/-/g, ""));
       return true;
-    } catch {
+    } catch (err) {
       toast.error("Failed to fetch DIGIPIN.");
       return false;
     } finally {
       setApiLoading(false);
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,17 +131,7 @@ const GetDigipin = ({ isLoggedIn }) => {
       return toast.warn("Selected location is outside India.");
 
     await fetchAndSetDigipin(latVal, lngVal);
-  };
-
-  const handleSave = async () => {
-    try {
-      const digipin = result.digipin.replace(/-/g, "");
-      await saveUserDigipin(digipin);
-      toast.success("DIGIPIN saved successfully.");
-    } catch {
-      toast.error("Failed to save DIGIPIN.");
-    }
-  };
+  };  
 
   return (
     <div className="w-full p-4 space-y-6">     

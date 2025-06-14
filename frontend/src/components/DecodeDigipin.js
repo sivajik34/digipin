@@ -3,6 +3,7 @@ import { decodeDigipin, fetchDigipin } from "../services/api";
 import LocationMap from "./LocationMap";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { decodeDigipinOffline,encodeDigipinOffline } from "../utils/digipin";
 
 const ALLOWED_CHARS_REGEX = /^[FCJKLMPT2-9]*$/i;
 
@@ -42,7 +43,7 @@ const DecodeDigipin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLatlng(null);
-
+  
     const formatted = digipin.replace(/-/g, "");
     if (!formatted) {
       toast.error("DIGIPIN cannot be empty");
@@ -56,9 +57,25 @@ const DecodeDigipin = () => {
       toast.error("DIGIPIN contains invalid characters");
       return;
     }
-
+  
+    setLoading(true);
+  
+    if (!navigator.onLine) {
+      // ✅ Offline: Use local JS decoder
+      try {
+        const { lat, lon } = decodeDigipinOffline(formatted);
+        setLatlng({ lat: parseFloat(lat), lng: parseFloat(lon) });
+        toast.info("Offline mode: DIGIPIN decoded locally");
+      } catch (offlineErr) {
+        toast.error("Offline decoding failed: " + offlineErr.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+  
+    // ✅ Online: Use API decoder
     try {
-      setLoading(true);
       const res = await decodeDigipin(formatted);
       const { latitude, longitude } = res?.data || {};
       if (
@@ -70,17 +87,36 @@ const DecodeDigipin = () => {
         throw new Error("Invalid coordinates received");
       }
       setLatlng({ lat: parseFloat(latitude), lng: parseFloat(longitude) });
-      toast.success("DIGIPIN decoded successfully!");
+      toast.success("DIGIPIN decoded using online API");
     } catch (error) {
-      toast.error("Failed to decode DIGIPIN");
+      toast.error("Online decoding failed");
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleMapClick = async (lat, lng) => {
+    setLoading(true);
+    setLatlng(null);
+  
+    if (!navigator.onLine) {
+      // ✅ Offline: use local encoder
+      try {
+        const digipinOffline = encodeDigipinOffline(lat, lng);
+        setDigipin(formatDigipin(digipinOffline));
+        setLatlng({ lat, lng });
+        toast.info("Offline mode: DIGIPIN generated locally");
+      } catch (offlineErr) {
+        toast.error("Offline encoding failed: " + offlineErr.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+  
+    // ✅ Online: use API
     try {
-      setLoading(true);
       const res = await fetchDigipin(lat, lng);
       const digipinFromCoords = res?.data?.digipin || "";
       if (!digipinFromCoords) throw new Error("No DIGIPIN found");
@@ -93,6 +129,7 @@ const DecodeDigipin = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
