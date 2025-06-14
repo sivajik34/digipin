@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { fetchDigipin, saveUserDigipin } from "../services/api";
+import { saveUserDigipin } from "../services/api";
 import QrCodeViewer from "./QrCodeViewer";
 import ShareDigipin from "./ShareDigipin";
 import LocationMap from "./LocationMap";
 import { toast } from "react-toastify";
 import OpenInGoogleMaps from "./OpenInGoogleMaps";
 import SaveDigipinForm from "./SaveDigipinForm";
-import { encodeDigipinOffline } from "../utils/digipin";
+import { useDigipin } from "../hooks/useDigipin";
 
 const GetDigipin = ({ isLoggedIn }) => {
   const [lat, setLat] = useState("");
@@ -16,6 +16,8 @@ const GetDigipin = ({ isLoggedIn }) => {
   const [locationError, setLocationError] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
+
+  const { encodeDigipin } = useDigipin();
 
   useEffect(() => {
     const storedLat = sessionStorage.getItem("digipin_lat");
@@ -45,14 +47,15 @@ const GetDigipin = ({ isLoggedIn }) => {
         setLng(longitude);
         try {
           setApiLoading(true);
-          const res = await fetchDigipin(latitude, longitude);
-          setResult(res.data);
-          const clean = res.data.digipin.replace(/-/g, "");
+          const res = await encodeDigipin(latitude, longitude);
+          if (!res?.digipin) throw new Error("No digipin returned");
+          setResult({ digipin: res.digipin, source: res.source });
+          const clean = res.digipin.replace(/-/g, "");
           setFormattedDigipin(clean);
 
           sessionStorage.setItem("digipin_lat", latitude);
           sessionStorage.setItem("digipin_lng", longitude);
-          sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
+          sessionStorage.setItem("digipin_result", JSON.stringify({ digipin: res.digipin, source: res.source }));
           sessionStorage.setItem("digipin_formatted", clean);
         } catch (err) {
           setLocationError("DIGIPIN fetch failed.");
@@ -74,33 +77,19 @@ const GetDigipin = ({ isLoggedIn }) => {
           setLocationError("An unknown geolocation error occurred.");
         }
       }
-      
     );
-  }, []);
+  }, [encodeDigipin]);
 
   const fetchAndSetDigipin = async (latVal, lngVal) => {
     try {
       setApiLoading(true);
-  
-      if (!navigator.onLine) {
-        // offline fallback
-        const encoded = encodeDigipinOffline(latVal, lngVal);
-        const fakeResult = {
-          digipin: encoded,
-          source: "offline"
-        };
-        setResult(fakeResult);
-        setFormattedDigipin(encoded.replace(/-/g, ""));
-        sessionStorage.setItem("digipin_result", JSON.stringify(fakeResult));
-        sessionStorage.setItem("digipin_formatted", encoded.replace(/-/g, ""));
-        return true;
-      }
-  
-      const res = await fetchDigipin(latVal, lngVal);
-      setResult(res.data);
-      setFormattedDigipin(res.data.digipin.replace(/-/g, ""));
-      sessionStorage.setItem("digipin_result", JSON.stringify(res.data));
-      sessionStorage.setItem("digipin_formatted", res.data.digipin.replace(/-/g, ""));
+      const res = await encodeDigipin(latVal, lngVal);
+      if (!res?.digipin) throw new Error("No digipin returned");
+
+      setResult({ digipin: res.digipin, source: res.source });
+      setFormattedDigipin(res.digipin.replace(/-/g, ""));
+      sessionStorage.setItem("digipin_result", JSON.stringify({ digipin: res.digipin, source: res.source }));
+      sessionStorage.setItem("digipin_formatted", res.digipin.replace(/-/g, ""));
       return true;
     } catch (err) {
       toast.error("Failed to fetch DIGIPIN.");
@@ -109,7 +98,6 @@ const GetDigipin = ({ isLoggedIn }) => {
       setApiLoading(false);
     }
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -131,11 +119,10 @@ const GetDigipin = ({ isLoggedIn }) => {
       return toast.warn("Selected location is outside India.");
 
     await fetchAndSetDigipin(latVal, lngVal);
-  };  
+  };
 
   return (
-    <div className="w-full p-4 space-y-6">     
-
+    <div className="w-full p-4 space-y-6">
       <form
         onSubmit={handleSubmit}
         className="flex flex-wrap gap-4 items-center mt-6 justify-center"
@@ -171,27 +158,27 @@ const GetDigipin = ({ isLoggedIn }) => {
       {result && (
         <div className="bg-gray-50 p-4 rounded shadow space-y-4">
           <div className="flex flex-wrap gap-4 justify-center">
-          <p className="text-lg font-semibold">
-            DIGIPIN: <span className="text-blue-800">{result.digipin}</span>
-          </p>
+            <p className="text-lg font-semibold">
+              DIGIPIN: <span className="text-blue-800">{result.digipin}</span>
+            </p>
 
-          
+            {isLoggedIn && (
+              <SaveDigipinForm
+                digipin={result.digipin}
+                onSaved={() => {
+                  // optional: refresh list
+                }}
+              />
+            )}
 
-          {isLoggedIn && (
-            <SaveDigipinForm
-              digipin={result.digipin}
-              onSaved={() => {
-                // optional: refresh list
-              }}
-            />
-          )}
-
-          <QrCodeViewer digipin={formattedDigipin} />
-          <OpenInGoogleMaps lat={lat} lng={lng} /><ShareDigipin digipin={result.digipin} /></div>
+            <QrCodeViewer digipin={formattedDigipin} />
+            <OpenInGoogleMaps lat={lat} lng={lng} />
+            <ShareDigipin digipin={result.digipin} />
+          </div>
           <LocationMap
-        onLocationSelect={handleSubmitFromMap}
-        marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
-      />
+            onLocationSelect={handleSubmitFromMap}
+            marker={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
+          />
         </div>
       )}
     </div>

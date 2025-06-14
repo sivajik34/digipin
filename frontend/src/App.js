@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import GetDigipin from "./components/GetDigipin";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
-import DecodeDigipin from "./components/DecodeDigipin";
+import GetLatLong from "./components/GetLatLong";
 import MyDigipins from "./components/MyDigipins";
 import { getCurrentUser } from "./services/api";
 import Modal from "react-modal";
@@ -115,7 +115,7 @@ function AppContent() {
         <main className="flex-grow p-4">
           <Routes>
             <Route path="/" element={<GetDigipin isLoggedIn={isLoggedIn} />} />
-            <Route path="/decode" element={<DecodeDigipin />} />
+            <Route path="/decode" element={<GetLatLong />} />
             <Route
               path="/my-digipins"
               element={
