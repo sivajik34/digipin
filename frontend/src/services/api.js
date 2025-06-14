@@ -75,3 +75,5 @@ export const downloadProofOfLocation = (digipin) =>
     { digipin },
     { responseType: "blob" } // PDF is binary
   );
+
+export const listAllUsers = () => API.get("/admin/users");

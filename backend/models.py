@@ -13,6 +13,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     is_oauth = Column(Boolean, default=False)
     digipins = relationship("SavedDigipin", back_populates="user")
     phone_number = Column(String(15), unique=True, nullable=True)
+    role = Column(String(20), default="user", nullable=False)
   
 class SavedDigipin(Base):
     __tablename__ = "saved_digipins"

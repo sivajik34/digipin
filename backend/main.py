@@ -16,6 +16,7 @@ from schemas.user_schemas import UserRead, UserCreate, UserUpdate
 from user_manager import get_user_manager
 from fastapi_users import FastAPIUsers
 from routes import proof
+from routes.admin import router as admin_router
 # Initialize FastAPI Users
 fastapi_users = FastAPIUsers[User, UUID](
     get_user_manager,
@@ -71,6 +72,8 @@ def include_routers():
     app.include_router(user_digipin_router)
     app.include_router(google_router)
     app.include_router(proof.router)
+    
+    app.include_router(admin_router)
 
 
 include_routers()

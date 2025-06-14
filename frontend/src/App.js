@@ -21,6 +21,8 @@ import OptimizeRouteForm from "./components/RouteOptimizerDashboard";
 import OptimizedRoutesMap from "./components/OptimizedRoutesMap";
 import BulkQrGenerator from "./components/BulkQrGenerator";
 import ProofOfLocation from "./components/ProofOfLocation";
+import AdminUsersList from "./components/AdminUsersList";
+
 const GOOGLE_CLIENT_ID =
   "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
 
@@ -40,6 +42,7 @@ function AppContent() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalContent, setModalContent] = useState("login");
   const [optimizeRequest, setOptimizeRequest] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -47,8 +50,10 @@ function AppContent() {
         const res = await getCurrentUser();
         setIsLoggedIn(true);
         setEmail(res.data.email);
+        setUserInfo(res.data);
       } catch {
         setIsLoggedIn(false);
+        setUserInfo(null);
       }
     };
     checkUser();
@@ -58,6 +63,7 @@ function AppContent() {
     localStorage.removeItem("access_token");
     setIsLoggedIn(false);
     setEmail("");
+    setUserInfo(null);
   };
 
   return (
@@ -75,6 +81,9 @@ function AppContent() {
             )}
             <Link to="/proof" className="hover:underline">Proof of Location</Link>
             <Link to="/optimize" className="hover:underline">Optimize Routes</Link>
+            {isLoggedIn && userInfo?.is_superuser && (
+  <Link to="/admin/users" className="hover:underline">Admin Users</Link>
+)}
             {!isLoggedIn ? (
               <>
                 <button
@@ -114,6 +123,16 @@ function AppContent() {
         {/* Main Content */}
         <main className="flex-grow p-4">
           <Routes>
+          <Route
+  path="/admin/users"
+  element={
+    isLoggedIn && userInfo?.is_superuser ? (
+      <AdminUsersList />
+    ) : (
+      <Navigate to="/" replace />
+    )
+  }
+/>
             <Route path="/" element={<GetDigipin isLoggedIn={isLoggedIn} />} />
             <Route path="/decode" element={<GetLatLong />} />
             <Route
