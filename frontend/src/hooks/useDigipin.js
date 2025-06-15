@@ -10,13 +10,13 @@ export const useDigipin = () => {
       return null;
     }
 
-    if (!navigator.onLine) {
+    //if (!navigator.onLine) {
       const offline = encodeDigipinOffline(lat, lng);
       return {
         digipin: offline,
         source: "offline",
       };
-    }
+    //}
 
     try {
       const res = await fetchDigipin(lat, lng);
@@ -41,14 +41,14 @@ export const useDigipin = () => {
       return null;
     }
 
-    if (!navigator.onLine) {
+    //if (!navigator.onLine) {
       const { latitude, longitude } = decodeDigipinOffline(cleaned);
       return {
         lat: latitude,
         lng: longitude,
         source: "offline",
       };
-    }
+    //}
 
     try {
       const res = await getLatlng(cleaned);
