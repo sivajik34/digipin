@@ -77,3 +77,5 @@ export const downloadProofOfLocation = (digipin) =>
   );
 
 export const listAllUsers = () => API.get("/admin/users");
+export const saveEvent = (eventData) => API.post("/api/events", eventData);
+

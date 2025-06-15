@@ -17,11 +17,11 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import digipincode from "./assets/digipincode.png";
-import OptimizeRouteForm from "./components/RouteOptimizerDashboard";
-import OptimizedRoutesMap from "./components/OptimizedRoutesMap";
+
 import BulkQrGenerator from "./components/BulkQrGenerator";
 import ProofOfLocation from "./components/ProofOfLocation";
 import AdminUsersList from "./components/AdminUsersList";
+import CreateEvent from "./components/CreateEvent";
 
 const GOOGLE_CLIENT_ID =
   "616953302611-4iu6121c1j60b413cl75i80q60eakj8n.apps.googleusercontent.com";
@@ -41,7 +41,6 @@ function AppContent() {
   const [email, setEmail] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalContent, setModalContent] = useState("login");
-  const [optimizeRequest, setOptimizeRequest] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
@@ -79,8 +78,9 @@ function AppContent() {
             {isLoggedIn && (
               <Link to="/my-digipins" className="hover:underline">My DIGIPINs</Link>
             )}
-            <Link to="/proof" className="hover:underline">Proof of Location</Link>
-            <Link to="/optimize" className="hover:underline">Optimize Routes</Link>
+            <Link to="/proof" className="hover:underline">Proof of Location</Link><Link to="/create-event" className="hover:underline">Create Event</Link>
+
+           
             {isLoggedIn && userInfo?.is_superuser && (
   <Link to="/admin/users" className="hover:underline">Admin Users</Link>
 )}
@@ -140,16 +140,8 @@ function AppContent() {
               element={
                 isLoggedIn ? <MyDigipins /> : <Navigate to="/" replace />
               }
-            />
-            <Route
-  path="/optimize"
-  element={
-    <div className="space-y-8">
-      <OptimizeRouteForm onSubmit={(data) => setOptimizeRequest(data)} />
-      {optimizeRequest && <OptimizedRoutesMap request={optimizeRequest} />}
-    </div>
-  }
-/><Route path="/bulk-qr" element={<BulkQrGenerator />} />
+            /><Route path="/create-event" element={<CreateEvent />} />
+           <Route path="/bulk-qr" element={<BulkQrGenerator />} />
 <Route path="/proof" element={<ProofOfLocation />} />
           </Routes>
         </main>

@@ -1,5 +1,5 @@
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import Boolean, Column, String,ForeignKey, DateTime, func,Integer
+from sqlalchemy import Boolean, Column, String,ForeignKey, DateTime, func,Integer, Text, Float, ForeignKey
 from database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -31,3 +31,20 @@ class ServiceArea(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     region = Column(Geometry(geometry_type="POLYGON", srid=4326), nullable=False)
+
+class Event(Base):
+    __tablename__ = "events"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
+    digipin = Column(String(12), nullable=False, index=True)  # with dashes, e.g. "FJKL-MCPT29"
+    title = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=True)
+    host_name = Column(String(100), nullable=True)
+    contact = Column(String(100), nullable=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
